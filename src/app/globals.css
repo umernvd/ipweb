@@ -1,21 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  /* PRD Section 10.1 Color Palette */
-  --color-primary: #1E3A5F; 
+  --color-primary: #1e3a5f;
   --color-primary-hover: #162a45;
-  --color-secondary: #2D6A9F; 
-  --color-accent: #3B9EDB; 
-  
-  --color-background-light: #F9FAFB; 
+  --color-secondary: #2d6a9f;
+  --color-accent: #3b9edb;
+
+  --color-background-light: #f9fafb;
   --color-background-dark: #14181e;
-  
-  --color-surface-light: #FFFFFF; 
+
+  --color-surface-light: #ffffff;
   --color-surface-dark: #1e2329;
-  
-  --color-status-success: #16A34A; 
-  --color-status-warning: #D97706; 
-  --color-status-error: #DC2626; 
+
+  --color-status-success: #16a34a;
+  --color-status-warning: #d97706;
+  --color-status-error: #dc2626;
 
   /* Global Font Setup */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -25,6 +24,14 @@
 @layer base {
   body {
     background-color: var(--color-background-light);
-    color: #374151; /* PRD Body Text Color */
+    color: #374151;
   }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

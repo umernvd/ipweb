@@ -2,9 +2,11 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export const LoginForm = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -17,7 +19,6 @@ export const LoginForm = () => {
         <input
           id="email"
           type="email"
-          placeholder="admin@company.com"
           className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
         />
       </div>
@@ -33,7 +34,6 @@ export const LoginForm = () => {
           <input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
             className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10 transition-all"
           />
           <button
@@ -54,6 +54,7 @@ export const LoginForm = () => {
       {/* Submit Button */}
       <button
         type="button"
+        onClick={() => router.push("/company/dashboard")}
         className="mt-2 inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-hover h-12 px-4 py-2 w-full shadow-sm hover:shadow-md transition-colors"
       >
         Sign In
