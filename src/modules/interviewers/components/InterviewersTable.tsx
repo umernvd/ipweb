@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { AddInterviewerModal } from "./AddInterviewerModal";
 import {
   Search,
   Filter,
@@ -50,6 +52,7 @@ const mockInterviewers = [
 ];
 
 export const InterviewersTable = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="flex flex-col gap-6">
       {/* Page Header Area */}
@@ -62,7 +65,11 @@ export const InterviewersTable = () => {
             Manage your organization's interviewers and their permissions.
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-lg shadow-sm transition-all text-sm font-medium">
+
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-lg shadow-sm transition-all text-sm font-medium"
+        >
           <Plus size={18} />
           Add Interviewer
         </button>
@@ -212,6 +219,10 @@ export const InterviewersTable = () => {
           </div>
         </div>
       </div>
+      <AddInterviewerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
