@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* PRD Section 10.1 Color Palette */
+  --color-primary: #1E3A5F; 
+  --color-primary-hover: #162a45;
+  --color-secondary: #2D6A9F; 
+  --color-accent: #3B9EDB; 
+  
+  --color-background-light: #F9FAFB; 
+  --color-background-dark: #14181e;
+  
+  --color-surface-light: #FFFFFF; 
+  --color-surface-dark: #1e2329;
+  
+  --color-status-success: #16A34A; 
+  --color-status-warning: #D97706; 
+  --color-status-error: #DC2626; 
+
+  /* Global Font Setup */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base layer settings */
+@layer base {
+  body {
+    background-color: var(--color-background-light);
+    color: #374151; /* PRD Body Text Color */
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
