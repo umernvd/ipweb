@@ -16,13 +16,13 @@ import {
 import clsx from "clsx";
 
 const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Interviewers", href: "/interviewers", icon: Users },
-  { name: "Hiring Roles", href: "/roles", icon: Briefcase },
-  { name: "Levels", href: "/levels", icon: BarChart2 },
-  { name: "Question Bank", href: "/questions", icon: Library },
-  { name: "Blueprints", href: "/blueprints", icon: FileText },
-  { name: "Interviews", href: "/interviews", icon: Video },
+  { name: "Dashboard", href: "/company/dashboard", icon: LayoutDashboard },
+  { name: "Interviewers", href: "/company/interviewers", icon: Users },
+  { name: "Hiring Roles", href: "/company/roles", icon: Briefcase },
+  { name: "Levels", href: "/company/levels", icon: BarChart2 },
+  { name: "Question Bank", href: "/company/questions", icon: Library },
+  { name: "Blueprints", href: "/company/blueprints", icon: FileText },
+  { name: "Interviews", href: "/company/interviews", icon: Video },
 ];
 
 export const Sidebar = () => {
