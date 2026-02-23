@@ -66,10 +66,10 @@ export const Sidebar = () => {
 
       <div className="flex flex-col gap-1 px-3 py-4 mt-auto border-t border-slate-700/30">
         <Link
-          href="/settings"
+          href="/company/settings"
           className={clsx(
             "group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
-            pathname === "/settings"
+            pathname === "/company/settings"
               ? "bg-white/5 text-white border-l-2 border-white"
               : "text-slate-300 hover:bg-white/10 hover:text-white",
           )}
