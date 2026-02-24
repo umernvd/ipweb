@@ -150,7 +150,7 @@ export const InterviewDetailDrawer = ({
                 </h3>
 
                 <div className="flex gap-6 items-start">
-                  <div className="flex-shrink-0 flex flex-col items-center justify-center bg-white border border-slate-100 rounded-xl p-4 shadow-sm w-28 h-28">
+                  <div className="shrink-0 flex flex-col items-center justify-center bg-white border border-slate-100 rounded-xl p-4 shadow-sm w-28 h-28">
                     <span
                       className={`text-4xl font-bold ${interview.score >= 80 ? "text-emerald-600" : interview.score >= 60 ? "text-amber-500" : "text-rose-600"}`}
                     >
