@@ -10,7 +10,7 @@ export default function HiringRolesPage() {
   const { fetchRoles, roles, selectedRoleId } = useRoleStore();
   const { fetchLevels } = useLevelStore();
 
-  const COMPANY_ID = "my-company-id";
+  const COMPANY_ID = "demo-company-id";
 
   useEffect(() => {
     fetchRoles(COMPANY_ID);

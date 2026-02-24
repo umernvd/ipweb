@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Level } from "@/core/entities/role";
-import { configService } from "@/core/services/config.service";
+import { DI } from "@/core/di/container";
 
 interface LevelStore {
   levels: Level[];
@@ -17,7 +17,9 @@ export const useLevelStore = create<LevelStore>((set, get) => ({
 
   fetchLevels: async (companyId, roleId) => {
     set({ isLoading: true });
-    const levels = await configService.getLevels(companyId, roleId);
+    const levels = roleId
+      ? await DI.levelService.getLevels(companyId, roleId)
+      : [];
     set({ levels, isLoading: false });
   },
 
@@ -32,7 +34,7 @@ export const useLevelStore = create<LevelStore>((set, get) => ({
     }));
 
     try {
-      const createdLevel = await configService.createLevel(newLevelData);
+      const createdLevel = await DI.levelService.createLevel(newLevelData);
       set((state) => ({
         levels: state.levels.map((l) => (l.$id === tempId ? createdLevel : l)),
       }));
@@ -47,7 +49,7 @@ export const useLevelStore = create<LevelStore>((set, get) => ({
     const originalLevels = get().levels;
     set({ levels: originalLevels.filter((l) => l.$id !== id) });
     try {
-      await configService.deleteLevel(id);
+      await DI.levelService.removeLevel(id);
     } catch (err) {
       set({ levels: originalLevels });
     }

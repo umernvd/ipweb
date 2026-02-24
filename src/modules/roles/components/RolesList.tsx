@@ -33,7 +33,7 @@ export const RolesList = () => {
   const onSubmit = async (data: RoleFormValues) => {
     // Determine companyId from auth store in real app.
     // For now, we mock it or pass it from a parent.
-    await addRole({ ...data, companyId: "current-company-id" });
+    await addRole({ ...data, companyId: "demo-company-id" });
     reset();
     setIsAdding(false);
   };

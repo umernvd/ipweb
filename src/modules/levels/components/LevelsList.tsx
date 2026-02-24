@@ -39,7 +39,7 @@ export const LevelsList = () => {
     await addLevel({
       ...data,
       roleId: selectedRoleId,
-      companyId: "current-company-id", // Replace with actual company ID from auth store
+      companyId: "demo-company-id", // Replace with actual company ID from auth store
       // FIX 2: Ensure description is a string (DB requires it), even if optional in form
       description: data.description || "",
     });
