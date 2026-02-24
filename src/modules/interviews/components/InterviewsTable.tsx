@@ -1,5 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import {
+  InterviewDetailDrawer,
+  type InterviewDetail,
+} from "./InterviewDetailDrawer";
 import {
   Search,
   Calendar,
@@ -9,16 +14,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// Mock data based on the provided design and PRD
+// Mock Data (Completely stripped of visual avatars)
 const mockInterviews = [
   {
     id: "1",
-    candidate: {
-      name: "Alex Johnson",
-      email: "alex.j@gmail.com",
-      initials: "AJ",
-      color: "bg-indigo-100 text-indigo-700",
-    },
+    candidate: { name: "Alex Johnson", email: "alex.j@gmail.com" },
     role: "Senior Frontend Dev",
     level: "Senior",
     interviewer: "Sarah Smith",
@@ -28,11 +28,7 @@ const mockInterviews = [
   },
   {
     id: "2",
-    candidate: {
-      name: "Maria Garcia",
-      email: "m.garcia@outlook.com",
-      avatar: "https://i.pravatar.cc/150?u=maria",
-    },
+    candidate: { name: "Maria Garcia", email: "m.garcia@outlook.com" },
     role: "Product Manager",
     level: "L4",
     interviewer: "Mike Ross",
@@ -42,12 +38,7 @@ const mockInterviews = [
   },
   {
     id: "3",
-    candidate: {
-      name: "James Lee",
-      email: "james.lee@tech.co",
-      initials: "JL",
-      color: "bg-pink-100 text-pink-700",
-    },
+    candidate: { name: "James Lee", email: "james.lee@tech.co" },
     role: "Backend Engineer",
     level: "Mid",
     interviewer: "Sarah Smith",
@@ -57,11 +48,7 @@ const mockInterviews = [
   },
   {
     id: "4",
-    candidate: {
-      name: "Linda Kim",
-      email: "linda.k@gmail.com",
-      avatar: "https://i.pravatar.cc/150?u=linda",
-    },
+    candidate: { name: "Linda Kim", email: "linda.k@gmail.com" },
     role: "Data Scientist",
     level: "Senior",
     interviewer: "David Chen",
@@ -69,39 +56,8 @@ const mockInterviews = [
     date: "Oct 21, 2023",
     status: "Completed",
   },
-  {
-    id: "5",
-    candidate: {
-      name: "Robert Fox",
-      email: "r.fox@design.io",
-      initials: "RF",
-      color: "bg-cyan-100 text-cyan-700",
-    },
-    role: "UX Designer",
-    level: "L3",
-    interviewer: "Emily Davis",
-    score: 68,
-    date: "Oct 20, 2023",
-    status: "In Progress",
-  },
-  {
-    id: "6",
-    candidate: {
-      name: "Marcus Allen",
-      email: "m.allen@dev.co",
-      initials: "MA",
-      color: "bg-orange-100 text-orange-700",
-    },
-    role: "DevOps Engineer",
-    level: "Mid",
-    interviewer: "Sarah Smith",
-    score: null,
-    date: "Oct 18, 2023",
-    status: "Pending",
-  },
 ];
 
-// Helper to style scores professionally
 const getScoreBadge = (score: number | null) => {
   if (score === null)
     return <span className="text-slate-400 font-medium">-</span>;
@@ -124,7 +80,6 @@ const getScoreBadge = (score: number | null) => {
   );
 };
 
-// Helper to style status professionally (no pulsing animations)
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "Completed":
@@ -154,9 +109,40 @@ const getStatusBadge = (status: string) => {
 };
 
 export const InterviewsTable = () => {
+  const [selectedInterview, setSelectedInterview] =
+    useState<InterviewDetail | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleRowClick = (interview: any) => {
+    const detailData: InterviewDetail = {
+      id: interview.id,
+      candidate: {
+        name: interview.candidate.name,
+        email: interview.candidate.email,
+        phone: "+1 (555) 000-0000",
+        // No avatar/initials passed here anymore
+      },
+      role: interview.role,
+      level: interview.level,
+      interviewer: interview.interviewer,
+      date: interview.date,
+      score: interview.score || 0,
+      summary:
+        "Candidate demonstrated strong problem-solving skills but struggled slightly with system design concepts...",
+      skills: [
+        { name: "Technical Knowledge", score: 85 },
+        { name: "Communication", score: 90 },
+      ],
+      cvName: "Resume.pdf",
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    };
+
+    setSelectedInterview(detailData);
+    setIsDrawerOpen(true);
+  };
+
   return (
     <div className="flex flex-col gap-6 h-full">
-      {/* Page Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -166,7 +152,6 @@ export const InterviewsTable = () => {
             Manage and track candidate interviews across all active roles.
           </p>
         </div>
-
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
             <Search
@@ -180,22 +165,18 @@ export const InterviewsTable = () => {
             />
           </div>
           <button className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
-            <Calendar size={16} />
-            Date Range
+            <Calendar size={16} /> Date Range
           </button>
           <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-medium shadow-sm transition-all">
-            <Plus size={18} />
-            Schedule
+            <Plus size={18} /> Schedule
           </button>
         </div>
       </div>
 
-      {/* Main Table Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col flex-1 overflow-hidden">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse">
             <thead>
-              {/* De-AI'd Header: Light gray background, uppercase muted text */}
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[280px]">
                   Candidate
@@ -225,61 +206,41 @@ export const InterviewsTable = () => {
               {mockInterviews.map((interview) => (
                 <tr
                   key={interview.id}
+                  onClick={() => handleRowClick(interview)}
                   className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                 >
-                  {/* Candidate Info */}
+                  {/* CLEAN TEXT ROW - NO AVATAR */}
                   <td className="py-3.5 px-6">
-                    <div className="flex items-center gap-3">
-                      {interview.candidate.avatar ? (
-                        <img
-                          src={interview.candidate.avatar}
-                          alt={interview.candidate.name}
-                          className="h-9 w-9 rounded-full border border-slate-200 object-cover"
-                        />
-                      ) : (
-                        <div
-                          className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold text-xs border border-white shadow-sm ${interview.candidate.color}`}
-                        >
-                          {interview.candidate.initials}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium text-slate-900 text-sm">
-                          {interview.candidate.name}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {interview.candidate.email}
-                        </p>
-                      </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-slate-900 text-sm">
+                        {interview.candidate.name}
+                      </span>
+                      <span className="text-xs text-slate-500 mt-0.5">
+                        {interview.candidate.email}
+                      </span>
                     </div>
                   </td>
 
                   <td className="py-3.5 px-6 text-sm text-slate-700">
                     {interview.role}
                   </td>
-
                   <td className="py-3.5 px-6">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                       {interview.level}
                     </span>
                   </td>
-
                   <td className="py-3.5 px-6 text-sm text-slate-700">
                     {interview.interviewer}
                   </td>
-
                   <td className="py-3.5 px-6 text-center">
                     {getScoreBadge(interview.score)}
                   </td>
-
                   <td className="py-3.5 px-6 text-sm text-slate-500">
                     {interview.date}
                   </td>
-
                   <td className="py-3.5 px-6">
                     {getStatusBadge(interview.status)}
                   </td>
-
                   <td className="py-3.5 px-6 text-right">
                     <div className="flex items-center justify-end text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all">
                       <ArrowRight size={18} />
@@ -291,7 +252,7 @@ export const InterviewsTable = () => {
           </table>
         </div>
 
-        {/* Modern Minimal Pagination */}
+        {/* Pagination */}
         <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
           <p className="text-sm text-slate-500">
             Showing <span className="font-medium text-slate-900">1</span> to{" "}
@@ -323,6 +284,12 @@ export const InterviewsTable = () => {
           </div>
         </div>
       </div>
+
+      <InterviewDetailDrawer
+        interview={selectedInterview}
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      />
     </div>
   );
 };

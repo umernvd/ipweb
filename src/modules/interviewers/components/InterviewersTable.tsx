@@ -13,6 +13,19 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+// Define the shape of interviewer detail data
+export interface InterviewerDetail {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  date: string;
+  initials?: string;
+  color?: string;
+  image?: string;
+}
+
 // Dummy data to map over (will be replaced by Appwrite data later)
 const mockInterviewers = [
   {
@@ -52,9 +65,31 @@ const mockInterviewers = [
 ];
 
 export const InterviewersTable = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedInterviewer, setSelectedInterviewer] =
+    useState<InterviewerDetail | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Mock function to transform table row data into detailed drawer data
+  // In the real app, this would fetch from Appwrite based on ID
+  const handleRowClick = (interviewer: any) => {
+    const detailData: InterviewerDetail = {
+      id: interviewer.id,
+      name: interviewer.name,
+      email: interviewer.email,
+      phone: "+1 (555) 000-0000",
+      status: interviewer.status,
+      date: interviewer.date,
+      initials: interviewer.initials,
+      color: interviewer.color,
+      image: interviewer.image,
+    };
+    setSelectedInterviewer(detailData);
+    setIsDrawerOpen(true);
+  };
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 h-full">
       {/* Page Header Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -76,7 +111,7 @@ export const InterviewersTable = () => {
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col flex-1 overflow-hidden">
         {/* Toolbar */}
         <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-center bg-white">
           <div className="relative w-full sm:max-w-sm">
@@ -101,7 +136,7 @@ export const InterviewersTable = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse">
             <thead>
               {/* Human-designed modern header: light gray, crisp uppercase text */}
@@ -123,11 +158,12 @@ export const InterviewersTable = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-slate-100">
               {mockInterviewers.map((interviewer) => (
                 <tr
                   key={interviewer.id}
-                  className="hover:bg-slate-50/80 transition-colors group"
+                  onClick={() => handleRowClick(interviewer)}
+                  className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-3">
