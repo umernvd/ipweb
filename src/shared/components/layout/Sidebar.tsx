@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Users,
   Briefcase,
-  BarChart2,
   Library,
   FileText,
   Video,
@@ -18,8 +17,7 @@ import clsx from "clsx";
 const navItems = [
   { name: "Dashboard", href: "/company/dashboard", icon: LayoutDashboard },
   { name: "Interviewers", href: "/company/interviewers", icon: Users },
-  { name: "Hiring Roles", href: "/company/roles", icon: Briefcase },
-  { name: "Levels", href: "/company/levels", icon: BarChart2 },
+  { name: "Roles & Levels", href: "/company/hiring-roles", icon: Briefcase },
   { name: "Question Bank", href: "/company/questions", icon: Library },
   { name: "Blueprints", href: "/company/blueprints", icon: FileText },
   { name: "Interviews", href: "/company/interviews", icon: Video },
