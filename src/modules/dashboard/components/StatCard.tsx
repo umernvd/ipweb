@@ -1,15 +1,19 @@
 import { LucideIcon } from "lucide-react";
 
+// 1. Define the Trend object type explicitly
 interface TrendData {
   value: string;
-  direction: "up" | "down" | "neutral";
+  isPositive?: boolean;
+  label?: string;
 }
 
+// 2. Define the Props, making colorTheme optional
 interface StatCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
   trend?: TrendData;
+  colorTheme?: "blue" | "purple" | "indigo" | "orange"; // Made optional (?)
 }
 
 export const StatCard = ({
@@ -17,36 +21,42 @@ export const StatCard = ({
   value,
   icon: Icon,
   trend,
+  colorTheme,
 }: StatCardProps) => {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md hover:-translate-y-1">
-      <div className="mb-4 flex items-start justify-between">
-        <Icon className="w-5 h-5 text-slate-400" aria-label={title} />
+    <div className="flex flex-col p-5 bg-white border border-slate-200 rounded-xl shadow-sm transition-all hover:shadow-md">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-medium text-slate-500">{title}</p>
+        {/* We use a subtle gray for the icon to keep it professional */}
+        <Icon className="w-5 h-5 text-slate-400" />
+      </div>
+
+      <div className="flex items-baseline gap-3">
+        <h3 className="text-2xl font-semibold text-slate-900">{value}</h3>
+
         {trend && (
-          <span className="flex items-center gap-1 text-xs" data-testid="trend">
-            {trend.direction === "up" && (
-              <span className="text-green-600">↑</span>
+          <span
+            className={`text-sm font-medium flex items-center ${
+              trend.isPositive
+                ? "text-emerald-600"
+                : trend.isPositive === false
+                  ? "text-red-600"
+                  : "text-slate-500"
+            }`}
+          >
+            {trend.isPositive === true
+              ? "↑"
+              : trend.isPositive === false
+                ? "↓"
+                : ""}{" "}
+            {trend.value}
+            {trend.label && (
+              <span className="ml-1 text-slate-400 font-normal">
+                {trend.label}
+              </span>
             )}
-            {trend.direction === "down" && (
-              <span className="text-red-600">↓</span>
-            )}
-            <span
-              className={
-                trend.direction === "up"
-                  ? "text-green-600"
-                  : trend.direction === "down"
-                    ? "text-red-600"
-                    : "text-slate-500"
-              }
-            >
-              {trend.value}
-            </span>
           </span>
         )}
-      </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <h3 className="text-3xl font-bold text-slate-900">{value}</h3>
       </div>
     </div>
   );
