@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   LayoutTemplate,
 } from "lucide-react";
+import { BlueprintPreviewCard } from "@/modules/blueprints/components/BlueprintPreviewCard";
 
 const CATEGORIES = [
   {
@@ -85,6 +86,9 @@ export default function CreateBlueprintPage() {
     control,
     name: "structure",
   });
+
+  // This subscribes to the entire form state in real-time
+  const formData = watch() as Partial<BlueprintFormValues>;
 
   const selectedRoleId = watch("roleId");
 
@@ -353,17 +357,7 @@ export default function CreateBlueprintPage() {
 
         {/* RIGHT COLUMN: PREVIEW */}
         <div className="col-span-5">
-          <div className="sticky top-6">
-            <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
-              <h2 className="font-semibold text-lg mb-4">Blueprint Preview</h2>
-              <div className="p-4 bg-white/10 rounded-xl border border-white/10 text-center">
-                <p className="text-slate-400 text-sm">Live Preview Component</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Coming in Chunk C...
-                </p>
-              </div>
-            </div>
-          </div>
+          <BlueprintPreviewCard data={formData} />
         </div>
       </div>
     </div>
