@@ -14,7 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// Mock Data (Completely stripped of visual avatars)
+// Mock Data
 const mockInterviews = [
   {
     id: "1",
@@ -120,7 +120,6 @@ export const InterviewsTable = () => {
         name: interview.candidate.name,
         email: interview.candidate.email,
         phone: "+1 (555) 000-0000",
-        // No avatar/initials passed here anymore
       },
       role: interview.role,
       level: interview.level,
