@@ -1,174 +1,158 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, Mail, Phone, Lock, ShieldCheck, ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { registerSchema, type RegisterFormValues } from "@/core/validators/auth.validator";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { DI } from "@/core/di/container"; // ✅ Import the Dependency Injection container
+import {
+  Loader2,
+  AlertCircle,
+  Building2,
+  Mail,
+  Lock,
+  CheckCircle2,
+} from "lucide-react";
 
 export const RegisterForm = () => {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    mode: "onBlur",
-  });
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const passwordValue = watch("password", "");
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-  const calculateStrength = (pass: string) => {
-    let score = 0;
-    if (!pass) return 0;
-    if (pass.length >= 8) score += 1;
-    if (/[A-Z]/.test(pass)) score += 1;
-    if (/[0-9]/.test(pass)) score += 1;
-    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
-    return score;
-  };
+    // 1. Extract Data
+    const formData = new FormData(e.currentTarget);
+    const companyName = formData.get("companyName") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
-  const strength = calculateStrength(passwordValue);
-  const strengthLabels = ["Weak", "Weak", "Fair", "Good", "Strong"];
-  const strengthColors = ["bg-slate-200", "bg-red-500", "bg-amber-500", "bg-blue-500", "bg-green-500"];
+    // 2. Client-Side Validation
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      setIsLoading(false);
+      return;
+    }
 
-  const onSubmit = async (data: RegisterFormValues) => {
-    // Appwrite registration logic will be injected here
-    console.log("Form submitted:", data);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // 3. The "Engine": Call Appwrite Service
+      // This creates User + Session + Company Document
+      await DI.authService.register(email, password, companyName);
+
+      // 4. Success Redirect
+      // The AuthGuard will eventually catch them, but we send them to dashboard
+      router.push("/company/dashboard");
+    } catch (err: any) {
+      console.error(err);
+      // Nice error handling for common Appwrite errors
+      if (err.code === 409) {
+        setError("An account with this email already exists.");
+      } else {
+        setError(err.message || "Registration failed. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5 text-left">
+      {/* Error Alert */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
+          <AlertCircle size={18} className="shrink-0 mt-0.5" />
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* Input: Company Name */}
       <div className="space-y-1.5">
-        <label htmlFor="companyName" className="block text-sm font-medium text-slate-700">
+        <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+          <Building2 size={16} className="text-slate-400" />
           Company Name
         </label>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            <Building2 size={20} />
-          </span>
-          <input
-            {...register("companyName")}
-            id="companyName"
-            type="text"
-            placeholder="e.g. Acme Corp"
-            className="block w-full rounded-lg border-slate-300 pl-10 py-3 text-sm focus:border-primary focus:ring-primary shadow-sm transition-colors"
-          />
-        </div>
-        {errors.companyName && <p className="text-xs text-red-500">{errors.companyName.message}</p>}
+        <input
+          name="companyName"
+          required
+          placeholder="e.g. Acme Innovations"
+          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+        />
       </div>
 
+      {/* Input: Work Email */}
       <div className="space-y-1.5">
-        <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-          Work Email Address
+        <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+          <Mail size={16} className="text-slate-400" />
+          Work Email
         </label>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            <Mail size={20} />
-          </span>
-          <input
-            {...register("email")}
-            id="email"
-            type="email"
-            placeholder="name@company.com"
-            className="block w-full rounded-lg border-slate-300 pl-10 py-3 text-sm focus:border-primary focus:ring-primary shadow-sm transition-colors"
-          />
-        </div>
-        {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+        <input
+          name="email"
+          type="email"
+          required
+          placeholder="hr@company.com"
+          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+        />
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
-          Phone Number <span className="text-slate-400 font-normal">(Optional)</span>
-        </label>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-            <Phone size={20} />
-          </span>
-          <input
-            {...register("phone")}
-            id="phone"
-            type="tel"
-            placeholder="+1 (555) 000-0000"
-            className="block w-full rounded-lg border-slate-300 pl-10 py-3 text-sm focus:border-primary focus:ring-primary shadow-sm transition-colors"
-          />
-        </div>
-      </div>
-
+      {/* Inputs: Password Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-1.5">
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <Lock size={16} className="text-slate-400" />
             Password
           </label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-              <Lock size={20} />
-            </span>
-            <input
-              {...register("password")}
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              className="block w-full rounded-lg border-slate-300 pl-10 py-3 text-sm focus:border-primary focus:ring-primary shadow-sm transition-colors"
-            />
-          </div>
-          {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+          <input
+            name="password"
+            type="password"
+            required
+            placeholder="••••••••"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+          />
         </div>
-
         <div className="space-y-1.5">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+          <label className="text-sm font-semibold text-slate-700">
             Confirm Password
           </label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-              <ShieldCheck size={20} />
-            </span>
-            <input
-              {...register("confirmPassword")}
-              id="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              className="block w-full rounded-lg border-slate-300 pl-10 py-3 text-sm focus:border-primary focus:ring-primary shadow-sm transition-colors"
-            />
-          </div>
-          {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
+          <input
+            name="confirmPassword"
+            type="password"
+            required
+            placeholder="••••••••"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+          />
         </div>
       </div>
 
-      <div className="mt-2">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-xs text-slate-500">Password strength</span>
-          <span className={`text-xs font-medium ${strength > 2 ? 'text-green-600' : 'text-amber-500'}`}>
-            {passwordValue ? strengthLabels[strength] : ""}
-          </span>
-        </div>
-        <div className="flex gap-1 h-1.5 w-full">
-          {[1, 2, 3, 4].map((level) => (
-            <div
-              key={level}
-              className={`h-full w-1/4 rounded-full transition-colors duration-300 ${
-                strength >= level ? strengthColors[strength] : "bg-slate-200"
-              }`}
-            />
-          ))}
-        </div>
-        <p className="text-xs text-slate-400 mt-1.5">Use at least 8 characters with a mix of letters, numbers & symbols.</p>
-      </div>
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full mt-6 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-slate-900/20 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="animate-spin" size={20} />
+            Creating Account...
+          </>
+        ) : (
+          <>
+            Create Account
+            
+          </>
+        )}
+      </button>
 
-      <div className="pt-2">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover text-white py-3.5 px-4 text-sm font-semibold shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          <span>{isSubmitting ? "Creating..." : "Create Account"}</span>
-          <ArrowRight size={18} />
-        </button>
-      </div>
-
-      <p className="text-xs text-center text-slate-500 px-4">
-        By registering, you agree to our <Link href="#" className="text-primary hover:underline">Terms of Service</Link> and <Link href="#" className="text-primary hover:underline">Privacy Policy</Link>.
+      {/* Terms fine print */}
+      <p className="text-xs text-center text-slate-400 mt-4">
+        By registering, you agree to our Terms of Service and Privacy Policy.
       </p>
     </form>
   );

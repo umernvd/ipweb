@@ -10,6 +10,7 @@ import { CompanyService } from "@/core/services/CompanyService";
 import { RoleService, LevelService } from "@/core/services/ConfigService";
 import { BlueprintService } from "@/core/services/BlueprintService";
 import { CandidateService } from "@/core/services/CandidateService";
+import { AuthService } from "@/core/services/AuthService";
 
 // 1. Infrastructure
 const client = new Client()
@@ -31,6 +32,7 @@ const roleService = new RoleService(roleRepo);
 const levelService = new LevelService(levelRepo);
 const blueprintService = new BlueprintService(blueprintRepo);
 const candidateService = new CandidateService(candidateRepo);
+const authService = new AuthService();
 
 // 4. Export
 export const DI = {
@@ -39,4 +41,5 @@ export const DI = {
   levelService,
   blueprintService,
   candidateService,
+  authService,
 };

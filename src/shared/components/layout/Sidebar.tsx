@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bot,
   LayoutDashboard,
@@ -11,9 +11,11 @@ import {
   FileText,
   Video,
   Settings,
-  UserCircle
+  UserCircle,
+  LogOut,
 } from "lucide-react";
 import clsx from "clsx";
+import { useAuthStore } from "@/stores/authStore";
 
 const navItems = [
   { name: "Dashboard", href: "/company/dashboard", icon: LayoutDashboard },
@@ -27,6 +29,13 @@ const navItems = [
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/auth/login");
+  };
 
   return (
     <aside className="flex w-[240px] flex-col justify-between bg-primary border-r border-slate-700/30 overflow-y-auto shrink-0 z-20">
@@ -77,6 +86,14 @@ export const Sidebar = () => {
           <Settings className="w-5 h-5" />
           <span className="text-sm font-medium">Settings</span>
         </Link>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-red-300 hover:bg-red-400/10 hover:text-red-200 transition-colors text-sm font-medium"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Sign Out</span>
+        </button>
       </div>
     </aside>
   );

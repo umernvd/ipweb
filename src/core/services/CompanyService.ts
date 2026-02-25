@@ -4,6 +4,10 @@ import { Company, CompanyStatus } from "@/core/entities/company";
 export class CompanyService {
   constructor(private companyRepo: ICompanyRepository) {}
 
+  async getById(id: string): Promise<Company | null> {
+    return this.companyRepo.findById(id);
+  }
+
   async getPendingApprovals(): Promise<Company[]> {
     return this.companyRepo.list("pending");
   }
@@ -28,5 +32,9 @@ export class CompanyService {
 
   async pauseCompany(id: string): Promise<void> {
     await this.companyRepo.updateStatus(id, "paused");
+  }
+
+  async updateStatus(id: string, status: "active" | "rejected"): Promise<void> {
+    await this.companyRepo.updateStatus(id, status);
   }
 }

@@ -4,21 +4,65 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuthStore } from "@/stores/authStore";
 
 export const LoginForm = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const { login } = useAuthStore();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await login(email, password);
+
+      // 1. Check who just logged in
+      const { isAdmin } = useAuthStore.getState();
+
+      // 2. Route them correctly
+      if (isAdmin) {
+        router.push("/super-admin/dashboard"); // 🚀 Super Admin
+      } else {
+        router.push("/company/dashboard"); // 🏢 Regular Company
+      }
+    } catch (err) {
+      setError("Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form className="flex flex-col gap-5">
+    <form onSubmit={handleLogin} className="flex flex-col gap-5">
+      {/* Error Message */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
       {/* Email Input */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-slate-700 text-sm font-medium leading-none" htmlFor="email">
+        <label
+          className="text-slate-700 text-sm font-medium leading-none"
+          htmlFor="email"
+        >
           Email
         </label>
         <input
           id="email"
           type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
           className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
         />
       </div>
@@ -26,7 +70,10 @@ export const LoginForm = () => {
       {/* Password Input */}
       <div className="flex flex-col gap-1.5">
         <div className="flex justify-between items-center">
-          <label className="text-slate-700 text-sm font-medium leading-none" htmlFor="password">
+          <label
+            className="text-slate-700 text-sm font-medium leading-none"
+            htmlFor="password"
+          >
             Password
           </label>
         </div>
@@ -34,6 +81,9 @@ export const LoginForm = () => {
           <input
             id="password"
             type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
             className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10 transition-all"
           />
           <button
@@ -45,7 +95,10 @@ export const LoginForm = () => {
           </button>
         </div>
         <div className="flex justify-end mt-1">
-          <Link href="#" className="text-sm font-medium text-primary hover:text-primary-light hover:underline transition-colors">
+          <Link
+            href="#"
+            className="text-sm font-medium text-primary hover:text-primary-light hover:underline transition-colors"
+          >
             Forgot Password?
           </Link>
         </div>
@@ -53,11 +106,11 @@ export const LoginForm = () => {
 
       {/* Submit Button */}
       <button
-        type="button"
-        onClick={() => router.push("/company/dashboard")}
-        className="mt-2 inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-hover h-12 px-4 py-2 w-full shadow-sm hover:shadow-md transition-colors"
+        type="submit"
+        disabled={loading}
+        className="mt-2 inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-hover h-12 px-4 py-2 w-full shadow-sm hover:shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Sign In
+        {loading ? "Signing In..." : "Sign In"}
       </button>
     </form>
   );

@@ -3,24 +3,26 @@
 import { useEffect } from "react";
 import { useRoleStore } from "@/stores/roleStore";
 import { useLevelStore } from "@/stores/levelStore";
+import { useAuthStore } from "@/stores/authStore";
 import { RolesList } from "@/modules/roles/components/RolesList";
 import { LevelsList } from "@/modules/levels/components/LevelsList";
 
 export default function HiringRolesPage() {
   const { fetchRoles, roles, selectedRoleId } = useRoleStore();
   const { fetchLevels } = useLevelStore();
-
-  const COMPANY_ID = "demo-company-id";
-
-  useEffect(() => {
-    fetchRoles(COMPANY_ID);
-  }, []);
+  const { companyId } = useAuthStore();
 
   useEffect(() => {
-    if (selectedRoleId) {
-      fetchLevels(COMPANY_ID, selectedRoleId);
+    if (companyId) {
+      fetchRoles(companyId);
     }
-  }, [selectedRoleId]);
+  }, [companyId]);
+
+  useEffect(() => {
+    if (selectedRoleId && companyId) {
+      fetchLevels(companyId, selectedRoleId);
+    }
+  }, [selectedRoleId, companyId]);
 
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-8rem)] flex gap-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Building2,
@@ -10,6 +10,7 @@ import {
   LogOut,
 } from "lucide-react";
 import clsx from "clsx";
+import { useAuthStore } from "@/stores/authStore";
 
 const navItems = [
   { name: "Dashboard", href: "/super-admin/dashboard", icon: LayoutDashboard },
@@ -25,6 +26,13 @@ const navItems = [
 
 export const SuperAdminSidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/auth/login");
+  };
 
   return (
     <aside className="flex w-[240px] flex-col justify-between bg-primary border-r border-slate-700/30 overflow-y-auto shrink-0 z-20">
@@ -75,9 +83,12 @@ export const SuperAdminSidebar = () => {
       </div>
 
       <div className="p-4 border-t border-white/10">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-red-300 hover:bg-white/5 hover:text-red-200 transition-colors">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-red-300 hover:bg-red-400/10 hover:text-red-200 transition-colors"
+        >
           <LogOut className="w-5 h-5" />
-          <span className="text-sm font-medium">Logout</span>
+          <span className="text-sm font-medium">Sign Out</span>
         </button>
       </div>
     </aside>

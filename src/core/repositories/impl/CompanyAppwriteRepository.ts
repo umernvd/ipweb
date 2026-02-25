@@ -52,6 +52,25 @@ export class CompanyAppwriteRepository implements ICompanyRepository {
     return this.toDomain(doc);
   }
 
+  async listPending(): Promise<Company[]> {
+    const response = await this.databases.listDocuments(
+      this.dbId,
+      this.collectionId,
+      [Query.equal("status", "pending"), Query.orderDesc("$createdAt")],
+    );
+    return response.documents.map(this.toDomain);
+  }
+
+  async update(id: string, data: Partial<Company>): Promise<Company> {
+    const doc = await this.databases.updateDocument(
+      this.dbId,
+      this.collectionId,
+      id,
+      data,
+    );
+    return this.toDomain(doc);
+  }
+
   // Mapper: Appwrite Document -> Domain Entity
   private toDomain(doc: Models.Document): Company {
     // Cast to 'any' to access custom fields not in standard Appwrite types
