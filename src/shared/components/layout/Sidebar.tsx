@@ -11,11 +11,13 @@ import {
   FileText,
   Video,
   Settings,
+  UserCircle
 } from "lucide-react";
 import clsx from "clsx";
 
 const navItems = [
   { name: "Dashboard", href: "/company/dashboard", icon: LayoutDashboard },
+  { name: "Candidates", href: "/company/candidates", icon: UserCircle },
   { name: "Interviewers", href: "/company/interviewers", icon: Users },
   { name: "Roles & Levels", href: "/company/hiring-roles", icon: Briefcase },
   { name: "Question Bank", href: "/company/questions", icon: Library },
