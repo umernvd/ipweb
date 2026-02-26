@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useInterviews } from "../hooks/useInterviews";
 import {
   InterviewDetailDrawer,
   type InterviewDetail,
@@ -12,51 +13,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-
-// Mock Data
-const mockInterviews = [
-  {
-    id: "1",
-    candidate: { name: "Alex Johnson", email: "alex.j@gmail.com" },
-    role: "Senior Frontend Dev",
-    level: "Senior",
-    interviewer: "Sarah Smith",
-    score: 85,
-    date: "Oct 24, 2023",
-    status: "Completed",
-  },
-  {
-    id: "2",
-    candidate: { name: "Maria Garcia", email: "m.garcia@outlook.com" },
-    role: "Product Manager",
-    level: "L4",
-    interviewer: "Mike Ross",
-    score: 72,
-    date: "Oct 23, 2023",
-    status: "In Progress",
-  },
-  {
-    id: "3",
-    candidate: { name: "James Lee", email: "james.lee@tech.co" },
-    role: "Backend Engineer",
-    level: "Mid",
-    interviewer: "Sarah Smith",
-    score: 55,
-    date: "Oct 22, 2023",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    candidate: { name: "Linda Kim", email: "linda.k@gmail.com" },
-    role: "Data Scientist",
-    level: "Senior",
-    interviewer: "David Chen",
-    score: 92,
-    date: "Oct 21, 2023",
-    status: "Completed",
-  },
-];
 
 const getScoreBadge = (score: number | null) => {
   if (score === null)
@@ -82,24 +41,24 @@ const getScoreBadge = (score: number | null) => {
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case "Completed":
+    case "completed":
       return (
         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>{" "}
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
           Completed
         </span>
       );
-    case "In Progress":
+    case "started":
       return (
         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200">
           <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span> In
           Progress
         </span>
       );
-    case "Pending":
+    case "pending":
       return (
         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>{" "}
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
           Pending
         </span>
       );
@@ -109,31 +68,61 @@ const getStatusBadge = (status: string) => {
 };
 
 export const InterviewsTable = () => {
+  const { interviews, isLoading, error } = useInterviews();
   const [selectedInterview, setSelectedInterview] =
     useState<InterviewDetail | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="animate-spin text-slate-400" size={32} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 text-red-600 rounded-lg flex items-center gap-2">
+        <AlertCircle size={20} />
+        {error}
+      </div>
+    );
+  }
+
+  if (interviews.length === 0) {
+    return (
+      <div className="text-center py-20 bg-white border border-slate-200 rounded-xl">
+        <h3 className="text-lg font-semibold text-slate-900">
+          No Interviews Found
+        </h3>
+        <p className="text-sm text-slate-500 mt-1">
+          Start an interview on the mobile app to see it here.
+        </p>
+      </div>
+    );
+  }
+
   const handleRowClick = (interview: any) => {
     const detailData: InterviewDetail = {
-      id: interview.id,
+      id: interview.$id,
       candidate: {
-        name: interview.candidate.name,
-        email: interview.candidate.email,
+        name: "Candidate",
+        email: "candidate@example.com",
         phone: "+1 (555) 000-0000",
       },
-      role: interview.role,
-      level: interview.level,
-      interviewer: interview.interviewer,
-      date: interview.date,
+      role: "Role",
+      level: "Level",
+      interviewer: "Interviewer",
+      date: new Date(interview.startedAt || Date.now()).toLocaleDateString(),
       score: interview.score || 0,
-      summary:
-        "Candidate demonstrated strong problem-solving skills but struggled slightly with system design concepts...",
+      summary: interview.aiSummary || "No summary available",
       skills: [
-        { name: "Technical Knowledge", score: 85 },
-        { name: "Communication", score: 90 },
+        { name: "Technical Knowledge", score: interview.score || 0 },
+        { name: "Communication", score: interview.score || 0 },
       ],
       cvName: "Resume.pdf",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      audioUrl: interview.driveFileUrl || "",
     };
 
     setSelectedInterview(detailData);
@@ -202,40 +191,41 @@ export const InterviewsTable = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {mockInterviews.map((interview) => (
+              {interviews.map((interview) => (
                 <tr
-                  key={interview.id}
+                  key={interview.$id}
                   onClick={() => handleRowClick(interview)}
                   className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                 >
-                  {/* CLEAN TEXT ROW - NO AVATAR */}
                   <td className="py-3.5 px-6">
                     <div className="flex flex-col">
                       <span className="font-medium text-slate-900 text-sm">
-                        {interview.candidate.name}
+                        Candidate {interview.candidateId.slice(0, 8)}
                       </span>
                       <span className="text-xs text-slate-500 mt-0.5">
-                        {interview.candidate.email}
+                        {interview.candidateId}
                       </span>
                     </div>
                   </td>
 
                   <td className="py-3.5 px-6 text-sm text-slate-700">
-                    {interview.role}
+                    {interview.roleId || "N/A"}
                   </td>
                   <td className="py-3.5 px-6">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                      {interview.level}
+                      Level
                     </span>
                   </td>
                   <td className="py-3.5 px-6 text-sm text-slate-700">
-                    {interview.interviewer}
+                    {interview.interviewerId.slice(0, 8)}
                   </td>
                   <td className="py-3.5 px-6 text-center">
                     {getScoreBadge(interview.score)}
                   </td>
                   <td className="py-3.5 px-6 text-sm text-slate-500">
-                    {interview.date}
+                    {interview.startedAt
+                      ? new Date(interview.startedAt).toLocaleDateString()
+                      : "N/A"}
                   </td>
                   <td className="py-3.5 px-6">
                     {getStatusBadge(interview.status)}
@@ -251,12 +241,17 @@ export const InterviewsTable = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
           <p className="text-sm text-slate-500">
             Showing <span className="font-medium text-slate-900">1</span> to{" "}
-            <span className="font-medium text-slate-900">6</span> of{" "}
-            <span className="font-medium text-slate-900">124</span> results
+            <span className="font-medium text-slate-900">
+              {Math.min(6, interviews.length)}
+            </span>{" "}
+            of{" "}
+            <span className="font-medium text-slate-900">
+              {interviews.length}
+            </span>{" "}
+            results
           </p>
           <div className="flex items-center gap-1">
             <button

@@ -11,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DriveAssetCard } from "./DriveAssetCard";
 
 export interface InterviewDetail {
   id: string;
@@ -194,52 +195,20 @@ export const InterviewDetailDrawer = ({
                 Assets
               </h3>
 
-              {/* Audio Player Card */}
-              <div className="p-4 bg-slate-900 rounded-xl shadow-sm flex flex-col gap-3">
-                <div className="flex items-center gap-3 text-white">
-                  <div className="p-2 bg-white/10 rounded-lg">
-                    <Mic size={20} className="text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">Audio Recording</p>
-                    <p className="text-xs text-slate-400">
-                      MP3 • AI Transcribed
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-4">
+                <DriveAssetCard
+                  label="Session Recording"
+                  subLabel="Listen in Google Drive"
+                  type="audio"
+                  link={interview.audioUrl}
+                />
 
-                {interview.audioUrl ? (
-                  <audio controls className="w-full h-8 mt-1 accent-primary">
-                    <source src={interview.audioUrl} type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>
-                ) : (
-                  <div className="text-xs text-slate-500 italic mt-1 bg-white/5 p-2 rounded text-center">
-                    Audio processing or unavailable
-                  </div>
-                )}
-              </div>
-
-              {/* CV Card */}
-              <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl hover:border-primary/30 transition-colors shadow-sm cursor-pointer group">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="h-10 w-10 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center shrink-0">
-                    <FileText size={20} />
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-medium text-slate-900 truncate pr-2">
-                      {interview.cvName || "Resume.pdf"}
-                    </span>
-                    <span className="text-xs text-slate-500">PDF Document</span>
-                  </div>
-                </div>
-                <a
-                  href={interview.cvUrl}
-                  target="_blank"
-                  className="p-2 text-slate-400 hover:text-primary transition-colors shrink-0"
-                >
-                  <Download size={18} />
-                </a>
+                <DriveAssetCard
+                  label="Candidate Assets"
+                  subLabel="View CV & Notes in Drive"
+                  type="folder"
+                  link={interview.cvUrl}
+                />
               </div>
             </div>
           </div>
