@@ -3,6 +3,7 @@ export interface Candidate {
   name: string;
   email: string;
   phone: string | null;
+  driveFolderId?: string | null;
 }
 
 export interface Role {

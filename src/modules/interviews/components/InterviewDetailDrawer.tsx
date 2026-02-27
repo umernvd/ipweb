@@ -10,6 +10,7 @@ export interface InterviewDetail {
     name: string;
     email: string;
     phone: string;
+    driveFolderId?: string | null;
   };
   role: string;
   level: string;
@@ -157,7 +158,7 @@ export const InterviewDetailDrawer = ({
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-shrink-0 w-32 h-32 rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col items-center justify-center">
+                    <div className="shrink-0 w-32 h-32 rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col items-center justify-center">
                       <span
                         className={`text-4xl font-bold ${interview.score >= 70 ? "text-emerald-500" : interview.score >= 40 ? "text-amber-500" : "text-red-500"}`}
                       >
@@ -168,7 +169,7 @@ export const InterviewDetailDrawer = ({
                       </span>
                     </div>
 
-                    <div className="flex-grow bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div className="grow bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                       <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                         Executive Summary
                       </h4>
@@ -219,7 +220,7 @@ export const InterviewDetailDrawer = ({
                   label="Candidate Assets"
                   subLabel="View CV & Notes in Drive"
                   type="folder"
-                  link={interview.cvUrl}
+                  link={interview.candidate?.driveFolderId || interview.cvUrl}
                 />
               </div>
             </div>
