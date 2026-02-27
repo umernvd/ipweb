@@ -2,20 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { DI } from "@/core/di/container";
-import { Interview } from "@/core/entities/interview";
+import { HydratedInterview } from "@/core/entities/types";
 import { useAuthStore } from "@/stores/authStore";
 
 export const useInterviews = () => {
-  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [interviews, setInterviews] = useState<HydratedInterview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get the current logged-in company
   const { companyId } = useAuthStore();
 
   useEffect(() => {
     const fetchInterviews = async () => {
-      // Safety check: Don't fetch if not logged in
       if (!companyId) {
         setIsLoading(false);
         return;
@@ -23,8 +21,7 @@ export const useInterviews = () => {
 
       try {
         setIsLoading(true);
-        // This calls the Appwrite Repository we built earlier!
-        const data = await DI.interviewService.getAll(companyId);
+        const data = await DI.interviewService.getDetailedInterviews(companyId);
         setInterviews(data);
         setError(null);
       } catch (err: any) {
@@ -36,7 +33,7 @@ export const useInterviews = () => {
     };
 
     fetchInterviews();
-  }, [companyId]); // Re-run if companyId changes
+  }, [companyId]);
 
   return { interviews, isLoading, error };
 };

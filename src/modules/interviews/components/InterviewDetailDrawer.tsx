@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  X,
-  User,
-  Calendar,
-  Mic,
-  FileText,
-  Download,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { X, User, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DriveAssetCard } from "./DriveAssetCard";
 
@@ -19,7 +10,6 @@ export interface InterviewDetail {
     name: string;
     email: string;
     phone: string;
-    // Removed initials/avatar entirely
   };
   role: string;
   level: string;
@@ -150,22 +140,44 @@ export const InterviewDetailDrawer = ({
                   AI Assessment
                 </h3>
 
-                <div className="flex gap-6 items-start">
-                  <div className="shrink-0 flex flex-col items-center justify-center bg-white border border-slate-100 rounded-xl p-4 shadow-sm w-28 h-28">
-                    <span
-                      className={`text-4xl font-bold ${interview.score >= 80 ? "text-emerald-600" : interview.score >= 60 ? "text-amber-500" : "text-rose-600"}`}
-                    >
-                      {interview.score}
-                    </span>
-                    <span className="text-xs text-slate-400 font-medium mt-1">
-                      / 100
-                    </span>
+                {!interview.summary ||
+                interview.score === null ||
+                interview.score === 0 ? (
+                  <div className="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700">
+                        Evaluating Session...
+                      </p>
+                      <p className="text-xs text-slate-500 max-w-xs mt-1">
+                        The AI is currently analyzing the interview transcript.
+                        The final score and summary will appear here shortly.
+                      </p>
+                    </div>
                   </div>
+                ) : (
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-shrink-0 w-32 h-32 rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col items-center justify-center">
+                      <span
+                        className={`text-4xl font-bold ${interview.score >= 70 ? "text-emerald-500" : interview.score >= 40 ? "text-amber-500" : "text-red-500"}`}
+                      >
+                        {interview.score}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mt-1">
+                        Out of 100
+                      </span>
+                    </div>
 
-                  <div className="flex-1 text-sm text-slate-600 leading-relaxed bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
-                    <p>{interview.summary}</p>
+                    <div className="flex-grow bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                        Executive Summary
+                      </h4>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {interview.summary}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="grid gap-3 mt-2">
                   {interview.skills.map((skill) => (

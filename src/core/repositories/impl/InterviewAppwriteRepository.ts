@@ -1,6 +1,7 @@
 import { Client, Databases, Query, Models } from "appwrite";
 import { IInterviewRepository } from "../IInterviewRepository";
 import { Interview } from "@/core/entities/interview";
+import { HydratedInterview, Candidate, Role } from "@/core/entities/types";
 
 export class InterviewAppwriteRepository implements IInterviewRepository {
   private databases: Databases;
@@ -82,5 +83,65 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
 
   async deleteInterview(id: string): Promise<void> {
     await this.databases.deleteDocument(this.databaseId, this.collectionId, id);
+  }
+
+  async getHydratedInterviews(companyId: string): Promise<HydratedInterview[]> {
+    try {
+      const rawInterviews = await this.getInterviews(companyId);
+      if (rawInterviews.length === 0) return [];
+
+      const candidateIds = [
+        ...new Set(rawInterviews.map((i) => i.candidateId).filter(Boolean)),
+      ];
+      const roleIds = [
+        ...new Set(rawInterviews.map((i) => i.roleId).filter(Boolean)),
+      ];
+
+      let candidates: Candidate[] = [];
+      let roles: Role[] = [];
+
+      const fetchPromises = [];
+      if (candidateIds.length > 0) {
+        fetchPromises.push(
+          this.databases
+            .listDocuments(this.databaseId, "candidates", [
+              Query.equal("$id", candidateIds),
+              Query.limit(candidateIds.length),
+            ])
+            .then((res) => {
+              candidates = res.documents as unknown as Candidate[];
+            }),
+        );
+      }
+      if (roleIds.length > 0) {
+        fetchPromises.push(
+          this.databases
+            .listDocuments(this.databaseId, "roles", [
+              Query.equal("$id", roleIds),
+              Query.limit(roleIds.length),
+            ])
+            .then((res) => {
+              roles = res.documents as unknown as Role[];
+            }),
+        );
+      }
+
+      await Promise.all(fetchPromises);
+
+      const hydratedData: HydratedInterview[] = rawInterviews.map(
+        (interview) => {
+          return {
+            ...interview,
+            candidate: candidates.find((c) => c.$id === interview.candidateId),
+            role: roles.find((r) => r.$id === interview.roleId),
+          };
+        },
+      );
+
+      return hydratedData;
+    } catch (error) {
+      console.error("Failed to hydrate interviews:", error);
+      return [];
+    }
   }
 }

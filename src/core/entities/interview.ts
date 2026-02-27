@@ -13,6 +13,6 @@ export interface Interview {
   // The Results
   aiSummary: string | null;
   score: number | null;
-  status: "started" | "completed" | "pending" |"reviewed";
+  status: "started" | "completed" | "pending" | "reviewed";
   startedAt: string | null;
 }

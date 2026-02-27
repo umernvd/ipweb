@@ -107,13 +107,13 @@ export const InterviewsTable = () => {
     const detailData: InterviewDetail = {
       id: interview.$id,
       candidate: {
-        name: "Candidate",
-        email: "candidate@example.com",
-        phone: "+1 (555) 000-0000",
+        name: interview.candidate?.name || "Candidate",
+        email: interview.candidate?.email || "candidate@example.com",
+        phone: interview.candidate?.phone || "+1 (555) 000-0000",
       },
-      role: "Role",
-      level: "Level",
-      interviewer: "Interviewer",
+      role: interview.role?.title || "Role",
+      level: interview.role?.level || "Level",
+      interviewer: interview.interviewerId || "Interviewer",
       date: new Date(interview.startedAt || Date.now()).toLocaleDateString(),
       score: interview.score || 0,
       summary: interview.aiSummary || "No summary available",
@@ -123,6 +123,7 @@ export const InterviewsTable = () => {
       ],
       cvName: "Resume.pdf",
       audioUrl: interview.driveFileUrl || "",
+      cvUrl: interview.driveFolderId || "",
     };
 
     setSelectedInterview(detailData);
@@ -200,20 +201,21 @@ export const InterviewsTable = () => {
                   <td className="py-3.5 px-6">
                     <div className="flex flex-col">
                       <span className="font-medium text-slate-900 text-sm">
-                        Candidate {interview.candidateId.slice(0, 8)}
+                        {interview.candidate?.name ||
+                          `Candidate ${interview.candidateId.slice(0, 8)}`}
                       </span>
                       <span className="text-xs text-slate-500 mt-0.5">
-                        {interview.candidateId}
+                        {interview.candidate?.email || interview.candidateId}
                       </span>
                     </div>
                   </td>
 
                   <td className="py-3.5 px-6 text-sm text-slate-700">
-                    {interview.roleId || "N/A"}
+                    {interview.role?.title || "N/A"}
                   </td>
                   <td className="py-3.5 px-6">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                      Level
+                      {interview.role?.level || "N/A"}
                     </span>
                   </td>
                   <td className="py-3.5 px-6 text-sm text-slate-700">
