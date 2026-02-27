@@ -130,21 +130,26 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
 
       const hydratedData: HydratedInterview[] = rawInterviews.map(
         (interview) => {
-          const matchingCandidate = candidates.find(
+          const candidate = candidates.find(
             (c) => c.$id === interview.candidateId,
-          ) as any;
+          );
+          const role = roles.find((r) => r.$id === interview.roleId);
           return {
             ...interview,
-            candidate: matchingCandidate
-              ? {
-                  $id: matchingCandidate.$id,
-                  name: matchingCandidate.name,
-                  email: matchingCandidate.email,
-                  phone: matchingCandidate.phone,
-                  driveFolderId: matchingCandidate.driveFolderId,
-                }
-              : undefined,
-            role: roles.find((r) => r.$id === interview.roleId),
+            candidate: {
+              $id: interview.candidateId,
+              name:
+                candidate?.name ||
+                `Unknown Candidate (${interview.candidateId.substring(0, 6)})`,
+              email: candidate?.email || "No email recorded",
+              phone: candidate?.phone || "No phone recorded",
+              driveFolderId: candidate?.driveFolderId || null,
+            },
+            role: {
+              $id: interview.roleId || "unknown",
+              title: role?.title || "Unspecified Role",
+              level: role?.level || "N/A",
+            },
           };
         },
       );

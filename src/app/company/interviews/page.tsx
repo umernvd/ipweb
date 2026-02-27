@@ -1,9 +1,8 @@
-import { InterviewsTable } from "@/modules/interviews/components/InterviewsTable";
+"use client";
 
-export const metadata = {
-  title: "Interviews | HireAI Admin",
-  description: "Manage and track candidate interviews",
-};
+import { ErrorBoundary } from "react-error-boundary";
+import { ComponentErrorFallback } from "@/shared/components/FallbackError";
+import { InterviewsTable } from "@/modules/interviews/components/InterviewsTable";
 
 export default function InterviewsPage() {
   return (
@@ -11,7 +10,9 @@ export default function InterviewsPage() {
       {/* h-[calc(100vh-8rem)] ensures the table takes up the full remaining height of the screen,
         allowing the internal table body to scroll while locking the pagination to the bottom.
       */}
-      <InterviewsTable />
+      <ErrorBoundary FallbackComponent={ComponentErrorFallback}>
+        <InterviewsTable />
+      </ErrorBoundary>
     </div>
   );
 }
