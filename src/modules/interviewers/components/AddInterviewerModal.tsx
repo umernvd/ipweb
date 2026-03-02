@@ -11,11 +11,17 @@ import {
 interface AddInterviewerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave: (
+    name: string,
+    email: string,
+    status: string,
+  ) => Promise<boolean | undefined>;
 }
 
 export const AddInterviewerModal = ({
   isOpen,
   onClose,
+  onSave,
 }: AddInterviewerModalProps) => {
   const {
     register,
@@ -25,7 +31,7 @@ export const AddInterviewerModal = ({
   } = useForm<InterviewerFormValues>({
     resolver: zodResolver(interviewerSchema),
     defaultValues: {
-      status: "active",
+      status: "Active",
     },
   });
 
@@ -37,12 +43,10 @@ export const AddInterviewerModal = ({
   };
 
   const onSubmit = async (data: InterviewerFormValues) => {
-    console.log("Saving Interviewer:", data);
-    // TODO: Add Appwrite API call here
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    handleClose();
+    const success = await onSave(data.fullName, data.email, data.status);
+    if (success) {
+      handleClose();
+    }
   };
 
   return (
@@ -139,8 +143,8 @@ export const AddInterviewerModal = ({
                 id="status"
                 className="w-full pl-4 pr-10 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none cursor-pointer transition-all"
               >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                 <ChevronDown size={18} />

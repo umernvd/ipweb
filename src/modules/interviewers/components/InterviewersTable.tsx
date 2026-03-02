@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AddInterviewerModal } from "./AddInterviewerModal";
+import { useInterviewers } from "@/modules/interviews/hooks/useInterviewers";
 import {
   Search,
   Filter,
@@ -65,6 +66,15 @@ const mockInterviewers = [
 ];
 
 export const InterviewersTable = () => {
+  // Pull data from the custom hook
+  const {
+    interviewers,
+    isLoading,
+    isMutating,
+    createInterviewer,
+    deleteInterviewer,
+  } = useInterviewers();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInterviewer, setSelectedInterviewer] =
     useState<InterviewerDetail | null>(null);
@@ -86,6 +96,22 @@ export const InterviewersTable = () => {
     };
     setSelectedInterviewer(detailData);
     setIsDrawerOpen(true);
+  };
+
+  // Delete handler with confirmation
+  const handleDelete = async (
+    e: React.MouseEvent,
+    id: string,
+    name: string,
+  ) => {
+    e.stopPropagation(); // Prevent row click
+    if (
+      window.confirm(
+        `Are you sure you want to remove ${name}? They will no longer be able to conduct interviews.`,
+      )
+    ) {
+      await deleteInterviewer(id);
+    }
   };
 
   return (
@@ -137,100 +163,159 @@ export const InterviewersTable = () => {
 
         {/* Table */}
         <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              {/* Human-designed modern header: light gray, crisp uppercase text */}
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[30%]">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[30%]">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
-                  Added
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[10%] text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {mockInterviewers.map((interviewer) => (
-                <tr
-                  key={interviewer.id}
-                  onClick={() => handleRowClick(interviewer)}
-                  className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
-                >
-                  <td className="px-6 py-3.5 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      {interviewer.image ? (
-                        <img
-                          src={interviewer.image}
-                          alt={interviewer.name}
-                          className="size-8 rounded-full border border-slate-200 object-cover"
-                        />
-                      ) : (
-                        <div
-                          className={`size-8 rounded-full flex items-center justify-center font-semibold text-xs border border-white shadow-sm ${interviewer.color}`}
-                        >
-                          {interviewer.initials}
-                        </div>
-                      )}
-                      <span className="font-medium text-slate-900">
-                        {interviewer.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3.5 text-slate-500">
-                    {interviewer.email}
-                  </td>
-                  <td className="px-6 py-3.5">
-                    {/* Modern solid/subtle badges */}
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
-                        interviewer.status === "Active"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-slate-100 text-slate-700 border-slate-200"
-                      }`}
-                    >
-                      {interviewer.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3.5 text-slate-500">
-                    {interviewer.date}
-                  </td>
-                  <td className="px-6 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
-                        title="Edit"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+          {isLoading ? (
+            <div className="flex justify-center items-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : interviewers.length === 0 ? (
+            <div className="text-center p-12 text-slate-500">
+              No interviewers found. Click "Add Interviewer" to create one.
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                {/* Human-designed modern header: light gray, crisp uppercase text */}
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[30%]">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[30%]">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
+                    Added
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[10%] text-right">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {interviewers.map((interviewer) => {
+                  // Generate initials from name
+                  const initials = interviewer.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+
+                  // Generate a color based on name hash
+                  const colors = [
+                    "bg-blue-100 text-blue-700",
+                    "bg-purple-100 text-purple-700",
+                    "bg-pink-100 text-pink-700",
+                    "bg-green-100 text-green-700",
+                    "bg-yellow-100 text-yellow-700",
+                  ];
+                  const colorIndex =
+                    interviewer.name.charCodeAt(0) % colors.length;
+                  const color = colors[colorIndex];
+
+                  return (
+                    <tr
+                      key={interviewer.$id}
+                      onClick={() =>
+                        handleRowClick({
+                          id: interviewer.$id,
+                          name: interviewer.name,
+                          email: interviewer.email,
+                          status: interviewer.status,
+                          date: new Date(
+                            interviewer.$createdAt,
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }),
+                          initials,
+                          color,
+                        })
+                      }
+                      className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
+                    >
+                      <td className="px-6 py-3.5 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`size-8 rounded-full flex items-center justify-center font-semibold text-xs border border-white shadow-sm ${color}`}
+                          >
+                            {initials}
+                          </div>
+                          <span className="font-medium text-slate-900">
+                            {interviewer.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-500">
+                        {interviewer.email}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        {/* Modern solid/subtle badges */}
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
+                            interviewer.status === "Active"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-slate-100 text-slate-700 border-slate-200"
+                          }`}
+                        >
+                          {interviewer.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-500">
+                        {new Date(interviewer.$createdAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </td>
+                      <td className="px-6 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
+                            title="Edit"
+                            disabled={isMutating}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={(e) =>
+                              handleDelete(e, interviewer.$id, interviewer.name)
+                            }
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                            title="Delete"
+                            disabled={isMutating}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Modern Pagination */}
         <div className="bg-white px-6 py-4 border-t border-slate-200 flex items-center justify-between">
           <div className="text-sm text-slate-500">
             Showing <span className="font-medium text-slate-900">1</span> to{" "}
-            <span className="font-medium text-slate-900">10</span> of{" "}
-            <span className="font-medium text-slate-900">34</span> results
+            <span className="font-medium text-slate-900">
+              {interviewers.length}
+            </span>{" "}
+            of{" "}
+            <span className="font-medium text-slate-900">
+              {interviewers.length}
+            </span>{" "}
+            results
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -258,6 +343,7 @@ export const InterviewersTable = () => {
       <AddInterviewerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSave={createInterviewer}
       />
     </div>
   );
