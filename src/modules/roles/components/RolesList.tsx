@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRoles } from "@/modules/roles/hooks/useRoles";
 import { useRoleStore } from "@/stores/roleStore";
 import { Briefcase, ChevronRight, Plus, Trash2, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -11,14 +12,8 @@ import {
 } from "@/core/validators/config.validator";
 
 export const RolesList = () => {
-  const {
-    roles,
-    isLoading,
-    selectedRoleId,
-    setSelectedRole,
-    addRole,
-    removeRole,
-  } = useRoleStore();
+  const { roles, isLoading, isMutating, createRole, deleteRole } = useRoles();
+  const { selectedRoleId, setSelectedRole } = useRoleStore();
   const [isAdding, setIsAdding] = useState(false);
 
   const {
@@ -31,11 +26,11 @@ export const RolesList = () => {
   });
 
   const onSubmit = async (data: RoleFormValues) => {
-    // Determine companyId from auth store in real app.
-    // For now, we mock it or pass it from a parent.
-    await addRole({ ...data, companyId: "demo-company-id" });
-    reset();
-    setIsAdding(false);
+    const success = await createRole(data.name, data.description, data.icon);
+    if (success) {
+      reset();
+      setIsAdding(false);
+    }
   };
 
   if (isLoading && roles.length === 0) {
@@ -82,9 +77,16 @@ export const RolesList = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeRole(role.$id);
+                  if (
+                    window.confirm(
+                      `Delete role "${role.name}"? This action cannot be undone.`,
+                    )
+                  ) {
+                    deleteRole(role.$id);
+                  }
                 }}
-                className="p-1.5 text-slate-300 hover:text-red-500 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                disabled={isMutating}
+                className="p-1.5 text-slate-300 hover:text-red-500 rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
               >
                 <Trash2 size={16} />
               </button>
