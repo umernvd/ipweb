@@ -1,5 +1,6 @@
 "use client";
 
+import { useRoles } from "@/modules/roles/hooks/useRoles";
 import {
   Search,
   Plus,
@@ -52,6 +53,9 @@ const getDifficultyStyles = (difficulty: string) => {
 };
 
 export const QuestionBankList = () => {
+  // Pull relational data for the dropdowns
+  const { roles } = useRoles();
+
   return (
     <div className="flex flex-col gap-6">
       {/* Page Header Area */}
@@ -90,8 +94,11 @@ export const QuestionBankList = () => {
           <div className="relative min-w-[160px]">
             <select className="w-full appearance-none bg-white border border-slate-200 text-slate-700 py-2 pl-3 pr-9 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer">
               <option value="">All Roles</option>
-              <option value="flutter">Flutter Developer</option>
-              <option value="react">React Developer</option>
+              {roles.map((r) => (
+                <option key={r.$id} value={r.$id}>
+                  {r.name}
+                </option>
+              ))}
             </select>
             <ChevronDown
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
