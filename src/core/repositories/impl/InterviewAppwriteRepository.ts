@@ -236,11 +236,18 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
               level: role?.level || "N/A",
             },
             interviewer: {
-              $id: interview.interviewerId,
+              $id: interview.interviewerId || "unknown",
               name:
                 interviewer?.name ||
-                `Unknown Interviewer (${interview.interviewerId.substring(0, 6)})`,
-              email: interviewer?.email || "No email recorded",
+                `Unknown (${interview.interviewerId?.substring(0, 6) || "N/A"})`,
+              email: interviewer?.email || "No email",
+              status: interviewer?.status || "Inactive",
+              companyId: interviewer?.companyId || interview.companyId,
+              $createdAt:
+                interviewer?.$createdAt ||
+                interview.startedAt ||
+                new Date().toISOString(),
+              $updatedAt: interviewer?.$updatedAt || new Date().toISOString(),
             },
           };
         },

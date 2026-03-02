@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { DI } from "@/core/di/container";
 import { HydratedInterview } from "@/core/entities/types";
 import { useAuthStore } from "@/stores/authStore";
+import { useInterviewStore } from "@/stores/interviewStore";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -24,15 +25,21 @@ export const useInterviews = () => {
 
   const { companyId } = useAuthStore();
 
+  // Also sync with Zustand store
+  const { setInterviews: setZustandInterviews, setLoading: setZustandLoading } =
+    useInterviewStore();
+
   useEffect(() => {
     const fetchInterviews = async () => {
       if (!companyId) {
         setIsLoading(false);
+        setZustandLoading(false);
         return;
       }
 
       try {
         setIsLoading(true);
+        setZustandLoading(true);
 
         // Calculate offset based on current page
         const offset = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -49,19 +56,32 @@ export const useInterviews = () => {
           },
         );
 
+        // Update local state
         setInterviews(result.documents);
         setTotal(result.total);
         setError(null);
+
+        // Also update Zustand store for Dashboard and other components
+        setZustandInterviews(result.documents, result.total);
       } catch (err: any) {
         console.error("Failed to fetch interviews:", err);
         setError("Could not load interviews. Please try again.");
       } finally {
         setIsLoading(false);
+        setZustandLoading(false);
       }
     };
 
     fetchInterviews();
-  }, [companyId, currentPage, searchQuery, statusFilter, dateRange]);
+  }, [
+    companyId,
+    currentPage,
+    searchQuery,
+    statusFilter,
+    dateRange,
+    setZustandInterviews,
+    setZustandLoading,
+  ]);
 
   return {
     interviews,

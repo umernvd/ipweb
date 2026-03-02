@@ -16,6 +16,10 @@ export interface Interviewer {
   $id: string;
   name: string;
   email: string;
+  status: string;
+  companyId: string;
+  $createdAt: string;
+  $updatedAt: string;
 }
 
 export interface PaginatedResult<T> {
