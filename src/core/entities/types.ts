@@ -12,9 +12,21 @@ export interface Role {
   level: string;
 }
 
+export interface Interviewer {
+  $id: string;
+  name: string;
+  email: string;
+}
+
+export interface PaginatedResult<T> {
+  total: number;
+  documents: T[];
+}
+
 import { Interview } from "./interview";
 
 export interface HydratedInterview extends Interview {
-  candidate?: Candidate; // Optional because the fetch could fail
+  candidate?: Candidate;
   role?: Role;
+  interviewer?: Interviewer;
 }

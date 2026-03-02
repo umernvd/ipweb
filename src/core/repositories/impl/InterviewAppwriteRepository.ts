@@ -1,7 +1,13 @@
 import { Client, Databases, Query, Models } from "appwrite";
 import { IInterviewRepository } from "../IInterviewRepository";
 import { Interview } from "@/core/entities/interview";
-import { HydratedInterview, Candidate, Role } from "@/core/entities/types";
+import {
+  HydratedInterview,
+  Candidate,
+  Role,
+  Interviewer,
+  PaginatedResult,
+} from "@/core/entities/types";
 
 export class InterviewAppwriteRepository implements IInterviewRepository {
   private databases: Databases;
@@ -85,22 +91,82 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
     await this.databases.deleteDocument(this.databaseId, this.collectionId, id);
   }
 
-  async getHydratedInterviews(companyId: string): Promise<HydratedInterview[]> {
+  async getHydratedInterviews(
+    companyId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      searchQuery?: string;
+      status?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+  ): Promise<PaginatedResult<HydratedInterview>> {
     try {
-      const rawInterviews = await this.getInterviews(companyId);
-      if (rawInterviews.length === 0) return [];
+      // 1. Build dynamic queries
+      const queries: string[] = [Query.equal("companyId", companyId)];
 
+      // Pagination
+      if (options?.limit) {
+        queries.push(Query.limit(options.limit));
+      }
+      if (options?.offset) {
+        queries.push(Query.offset(options.offset));
+      }
+
+      // Filtering by status
+      if (options?.status) {
+        queries.push(Query.equal("status", options.status));
+      }
+
+      // Date range filtering
+      if (options?.startDate) {
+        queries.push(Query.greaterThanEqual("startedAt", options.startDate));
+      }
+      if (options?.endDate) {
+        queries.push(Query.lessThanEqual("startedAt", options.endDate));
+      }
+
+      // Search (requires index on candidateName field in Appwrite)
+      if (options?.searchQuery) {
+        queries.push(Query.search("candidateName", options.searchQuery));
+      }
+
+      // Always order by creation date
+      queries.push(Query.orderDesc("$createdAt"));
+
+      // 2. Fetch interviews with total count
+      const response = await this.databases.listDocuments(
+        this.databaseId,
+        this.collectionId,
+        queries,
+      );
+
+      const rawInterviews = response.documents.map((doc) => this.toDomain(doc));
+      const total = response.total;
+
+      if (rawInterviews.length === 0) {
+        return { total: 0, documents: [] };
+      }
+
+      // 3. Extract unique IDs for batch fetching
       const candidateIds = [
         ...new Set(rawInterviews.map((i) => i.candidateId).filter(Boolean)),
       ];
       const roleIds = [
         ...new Set(rawInterviews.map((i) => i.roleId).filter(Boolean)),
       ];
+      const interviewerIds = [
+        ...new Set(rawInterviews.map((i) => i.interviewerId).filter(Boolean)),
+      ];
 
       let candidates: Candidate[] = [];
       let roles: Role[] = [];
+      let interviewers: Interviewer[] = [];
 
+      // 4. Batch fetch related data
       const fetchPromises = [];
+
       if (candidateIds.length > 0) {
         fetchPromises.push(
           this.databases
@@ -113,6 +179,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
             }),
         );
       }
+
       if (roleIds.length > 0) {
         fetchPromises.push(
           this.databases
@@ -126,14 +193,32 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
         );
       }
 
+      if (interviewerIds.length > 0) {
+        fetchPromises.push(
+          this.databases
+            .listDocuments(this.databaseId, "interviewers", [
+              Query.equal("$id", interviewerIds),
+              Query.limit(interviewerIds.length),
+            ])
+            .then((res) => {
+              interviewers = res.documents as unknown as Interviewer[];
+            }),
+        );
+      }
+
       await Promise.all(fetchPromises);
 
+      // 5. Hydrate interviews with guaranteed fallback objects
       const hydratedData: HydratedInterview[] = rawInterviews.map(
         (interview) => {
           const candidate = candidates.find(
             (c) => c.$id === interview.candidateId,
           );
           const role = roles.find((r) => r.$id === interview.roleId);
+          const interviewer = interviewers.find(
+            (i) => i.$id === interview.interviewerId,
+          );
+
           return {
             ...interview,
             candidate: {
@@ -150,14 +235,24 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
               title: role?.title || "Unspecified Role",
               level: role?.level || "N/A",
             },
+            interviewer: {
+              $id: interview.interviewerId,
+              name:
+                interviewer?.name ||
+                `Unknown Interviewer (${interview.interviewerId.substring(0, 6)})`,
+              email: interviewer?.email || "No email recorded",
+            },
           };
         },
       );
 
-      return hydratedData;
+      return {
+        total,
+        documents: hydratedData,
+      };
     } catch (error) {
       console.error("Failed to hydrate interviews:", error);
-      return [];
+      return { total: 0, documents: [] };
     }
   }
 }

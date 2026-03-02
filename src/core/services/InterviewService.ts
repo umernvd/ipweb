@@ -1,4 +1,4 @@
-import { HydratedInterview } from "../entities/types";
+import { HydratedInterview, PaginatedResult } from "../entities/types";
 import { IInterviewRepository } from "../repositories/IInterviewRepository";
 import { Interview } from "@/core/entities/interview";
 
@@ -14,10 +14,20 @@ export class InterviewService {
     return this.repo.getInterviewById(id);
   }
 
-  async getDetailedInterviews(companyId: string): Promise<HydratedInterview[]> {
-    if (!companyId) return [];
-    // Call our new batch-fetching method
-    return this.repo.getHydratedInterviews(companyId);
+  async getDetailedInterviews(
+    companyId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      searchQuery?: string;
+      status?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+  ): Promise<PaginatedResult<HydratedInterview>> {
+    if (!companyId) return { total: 0, documents: [] };
+    // Call our new batch-fetching method with pagination support
+    return this.repo.getHydratedInterviews(companyId, options);
   }
 
   // Useful for the "Review" page to update scores/status

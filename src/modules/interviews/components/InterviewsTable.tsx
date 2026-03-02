@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useInterviews } from "../hooks/useInterviews";
 import {
   InterviewDetailDrawer,
@@ -68,10 +68,60 @@ const getStatusBadge = (status: string) => {
 };
 
 export const InterviewsTable = () => {
-  const { interviews, isLoading, error } = useInterviews();
+  const {
+    interviews,
+    total,
+    isLoading,
+    error,
+    currentPage,
+    setCurrentPage,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    itemsPerPage,
+  } = useInterviews();
+
   const [selectedInterview, setSelectedInterview] =
     useState<InterviewDetail | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [localSearchInput, setLocalSearchInput] = useState("");
+
+  // Debounced search: Update searchQuery after 500ms of no typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(localSearchInput);
+      setCurrentPage(1); // Reset to page 1 when searching
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearchInput, setSearchQuery, setCurrentPage]);
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(total / itemsPerPage);
+  const startItem = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, total);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1); // Reset to page 1 when filtering
+  };
 
   if (isLoading) {
     return (
@@ -97,7 +147,9 @@ export const InterviewsTable = () => {
           No Interviews Found
         </h3>
         <p className="text-sm text-slate-500 mt-1">
-          Start an interview on the mobile app to see it here.
+          {searchQuery || statusFilter
+            ? "Try adjusting your filters to see more results."
+            : "Start an interview on the mobile app to see it here."}
         </p>
       </div>
     );
@@ -113,7 +165,7 @@ export const InterviewsTable = () => {
       },
       role: interview.role?.title || "Role",
       level: interview.role?.level || "Level",
-      interviewer: interview.interviewerId || "Interviewer",
+      interviewer: interview.interviewer?.name || "Unknown",
       date: new Date(interview.startedAt || Date.now()).toLocaleDateString(),
       score: interview.score || 0,
       summary: interview.aiSummary || "No summary available",
@@ -128,6 +180,42 @@ export const InterviewsTable = () => {
 
     setSelectedInterview(detailData);
     setIsDrawerOpen(true);
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
   };
 
   return (
@@ -150,9 +238,22 @@ export const InterviewsTable = () => {
             <input
               type="text"
               placeholder="Search candidates..."
+              value={localSearchInput}
+              onChange={(e) => setLocalSearchInput(e.target.value)}
               className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm w-full md:w-64 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
             />
           </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => handleStatusFilterChange(e.target.value)}
+            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          >
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="started">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="reviewed">Reviewed</option>
+          </select>
           <button className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
             <Calendar size={16} /> Date Range
           </button>
@@ -219,7 +320,7 @@ export const InterviewsTable = () => {
                     </span>
                   </td>
                   <td className="py-3.5 px-6 text-sm text-slate-700">
-                    {interview.interviewerId.slice(0, 8)}
+                    {interview.interviewer?.name || "Unknown"}
                   </td>
                   <td className="py-3.5 px-6 text-center">
                     {getScoreBadge(interview.score)}
@@ -245,36 +346,46 @@ export const InterviewsTable = () => {
 
         <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Showing <span className="font-medium text-slate-900">1</span> to{" "}
-            <span className="font-medium text-slate-900">
-              {Math.min(6, interviews.length)}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium text-slate-900">
-              {interviews.length}
-            </span>{" "}
-            results
+            Showing{" "}
+            <span className="font-medium text-slate-900">{startItem}</span> to{" "}
+            <span className="font-medium text-slate-900">{endItem}</span> of{" "}
+            <span className="font-medium text-slate-900">{total}</span> results
           </p>
           <div className="flex items-center gap-1">
             <button
-              className="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
-              disabled
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
-            <button className="h-8 w-8 flex items-center justify-center rounded-md bg-primary text-white text-sm font-medium">
-              1
-            </button>
-            <button className="h-8 w-8 flex items-center justify-center rounded-md text-slate-600 hover:bg-slate-50 text-sm font-medium transition-colors">
-              2
-            </button>
-            <button className="h-8 w-8 flex items-center justify-center rounded-md text-slate-600 hover:bg-slate-50 text-sm font-medium transition-colors">
-              3
-            </button>
-            <span className="h-8 w-8 flex items-center justify-center text-slate-400 text-sm">
-              ...
-            </span>
-            <button className="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors">
+            {getPageNumbers().map((page, index) =>
+              typeof page === "number" ? (
+                <button
+                  key={index}
+                  onClick={() => handlePageClick(page)}
+                  className={`h-8 w-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
+                    currentPage === page
+                      ? "bg-primary text-white"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {page}
+                </button>
+              ) : (
+                <span
+                  key={index}
+                  className="h-8 w-8 flex items-center justify-center text-slate-400 text-sm"
+                >
+                  {page}
+                </span>
+              ),
+            )}
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
               <ChevronRight size={18} />
             </button>
           </div>
