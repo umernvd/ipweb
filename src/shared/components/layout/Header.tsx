@@ -23,13 +23,11 @@ export const Header = () => {
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-slate-900 leading-none">Sarah Jenkins</p>
-            <p className="text-xs text-slate-500 mt-1">Acme Corp Admin</p>
+            <p className="text-xs text-slate-500 mt-1">SPEEDFORCE DIGITAL</p>
           </div>
           {/* Replaced external image with a clean UI avatar to prevent Next.js image domain errors */}
-          <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold border-2 border-white shadow-sm ring-1 ring-slate-200">
-            SJ
-          </div>
-          <ChevronDown className="text-slate-400 w-5 h-5" />
+         
+         
         </div>
       </div>
     </header>

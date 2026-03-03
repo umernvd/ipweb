@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSuperAdminStore } from "@/stores/superAdminStore";
 import { DI } from "@/core/di/container";
 
@@ -14,6 +14,8 @@ export const useSuperAdminDashboard = () => {
     setLoading,
     removePendingCompany,
   } = useSuperAdminStore();
+
+  const [isMutating, setIsMutating] = useState(false);
 
   // Fetch stats and pending list on mount
   useEffect(() => {
@@ -51,6 +53,7 @@ export const useSuperAdminDashboard = () => {
 
   const approveCompany = async (companyId: string) => {
     try {
+      setIsMutating(true);
       // Optimistically update the store
       removePendingCompany(companyId);
 
@@ -61,11 +64,14 @@ export const useSuperAdminDashboard = () => {
       // On error, refetch to restore correct state
       const pending = await DI.companyService.getPendingCompanies();
       setPendingList(pending);
+    } finally {
+      setIsMutating(false);
     }
   };
 
   const rejectCompany = async (companyId: string) => {
     try {
+      setIsMutating(true);
       // Optimistically update the store
       removePendingCompany(companyId);
 
@@ -76,6 +82,8 @@ export const useSuperAdminDashboard = () => {
       // On error, refetch to restore correct state
       const pending = await DI.companyService.getPendingCompanies();
       setPendingList(pending);
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -83,6 +91,7 @@ export const useSuperAdminDashboard = () => {
     stats,
     pendingList,
     isLoading,
+    isMutating,
     approveCompany,
     rejectCompany,
   };
