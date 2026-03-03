@@ -1,6 +1,11 @@
+"use client";
+
 import { Search, Bell, ChevronDown } from "lucide-react";
+import { useUser } from "@/context/UserContext";
 
 export const Header = () => {
+  const { fullName } = useUser();
+
   return (
     <header className="sticky top-0 z-10 flex h-20 w-full items-center justify-between border-b border-slate-200 bg-white px-8 py-3 shadow-sm">
       <div className="flex items-center gap-4">
@@ -22,12 +27,11 @@ export const Header = () => {
 
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-slate-900 leading-none">Sarah Jenkins</p>
+            <p className="text-sm font-bold text-slate-900 leading-none">
+              {fullName}
+            </p>
             <p className="text-xs text-slate-500 mt-1">SPEEDFORCE DIGITAL</p>
           </div>
-          {/* Replaced external image with a clean UI avatar to prevent Next.js image domain errors */}
-         
-         
         </div>
       </div>
     </header>
