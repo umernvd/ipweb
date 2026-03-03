@@ -11,6 +11,7 @@ export default function DashboardPage() {
     totalInterviews,
     pendingInterviews,
     recentInterviews,
+    chartData,
     isLoading,
   } = useCompanyDashboard();
 
@@ -30,28 +31,24 @@ export default function DashboardPage() {
           value={totalInterviewers.toString()}
           icon={Users}
           colorTheme="blue"
-          trend={{ value: "+12%", isPositive: true }}
         />
         <StatCard
           title="Active Roles"
           value={activeRoles.toString()}
           icon={Briefcase}
           colorTheme="purple"
-          trend={{ value: "0%", isPositive: undefined }}
         />
         <StatCard
           title="Total Interviews"
           value={totalInterviews.toLocaleString()}
           icon={Video}
           colorTheme="indigo"
-          trend={{ value: "+5.2%", isPositive: true }}
         />
         <StatCard
           title="Pending Interviews"
           value={pendingInterviews.toString()}
           icon={Clock}
           colorTheme="orange"
-          trend={{ value: "Action Required", isPositive: false }}
         />
       </div>
 
@@ -74,27 +71,22 @@ export default function DashboardPage() {
           </div>
 
           <div className="h-64 w-full rounded-lg bg-slate-50 flex items-end justify-between px-6 pb-0 pt-10 gap-2 relative overflow-hidden">
-            {/* Using a mapped array to generate dummy chart bars cleanly */}
-            {[40, 65, 45, 80, 55, 70, 60].map((height, i) => (
+            {chartData.map((item, i) => (
               <div
                 key={i}
-                style={{ height: `${height}%` }}
+                style={{ height: `${item.height}%` }}
                 className="w-full bg-primary/30 rounded-t-sm hover:bg-primary/60 transition-colors cursor-pointer relative group/bar"
               >
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-slate-800 text-white text-xs px-2 py-1 rounded">
-                  {height}
+                  {item.count}
                 </div>
               </div>
             ))}
           </div>
           <div className="flex justify-between mt-2 text-xs text-slate-400 px-2">
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thu</span>
-            <span>Fri</span>
-            <span>Sat</span>
-            <span>Sun</span>
+            {chartData.map((item, i) => (
+              <span key={i}>{item.label}</span>
+            ))}
           </div>
         </div>
 
