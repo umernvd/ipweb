@@ -93,7 +93,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
 
   async getHydratedInterviews(
     companyId: string,
-    options?: {
+    filters?: {
       limit?: number;
       offset?: number;
       searchQuery?: string;
@@ -107,29 +107,29 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       const queries: string[] = [Query.equal("companyId", companyId)];
 
       // Pagination
-      if (options?.limit) {
-        queries.push(Query.limit(options.limit));
+      if (filters?.limit) {
+        queries.push(Query.limit(filters.limit));
       }
-      if (options?.offset) {
-        queries.push(Query.offset(options.offset));
+      if (filters?.offset) {
+        queries.push(Query.offset(filters.offset));
       }
 
       // Filtering by status
-      if (options?.status) {
-        queries.push(Query.equal("status", options.status));
+      if (filters?.status) {
+        queries.push(Query.equal("status", filters.status));
       }
 
       // Date range filtering
-      if (options?.startDate) {
-        queries.push(Query.greaterThanEqual("startedAt", options.startDate));
+      if (filters?.startDate) {
+        queries.push(Query.greaterThanEqual("startedAt", filters.startDate));
       }
-      if (options?.endDate) {
-        queries.push(Query.lessThanEqual("startedAt", options.endDate));
+      if (filters?.endDate) {
+        queries.push(Query.lessThanEqual("startedAt", filters.endDate));
       }
 
       // Search (requires index on candidateName field in Appwrite)
-      if (options?.searchQuery) {
-        queries.push(Query.search("candidateName", options.searchQuery));
+      if (filters?.searchQuery) {
+        queries.push(Query.search("candidateName", filters.searchQuery));
       }
 
       // Always order by creation date

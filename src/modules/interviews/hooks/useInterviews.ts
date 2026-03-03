@@ -1,101 +1,79 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { DI } from "@/core/di/container";
-import { HydratedInterview } from "@/core/entities/types";
-import { useAuthStore } from "@/stores/authStore";
+import { useEffect } from "react";
 import { useInterviewStore } from "@/stores/interviewStore";
-
-const ITEMS_PER_PAGE = 10;
+import { useAuthStore } from "@/stores/authStore";
+import { DI } from "@/core/di/container";
 
 export const useInterviews = () => {
-  const [interviews, setInterviews] = useState<HydratedInterview[]>([]);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Pagination and filter state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [dateRange, setDateRange] = useState<{
-    startDate?: string;
-    endDate?: string;
-  }>({});
-
   const { companyId } = useAuthStore();
-
-  // Also sync with Zustand store
-  const { setInterviews: setZustandInterviews, setLoading: setZustandLoading } =
-    useInterviewStore();
+  const {
+    interviews,
+    totalCount,
+    isLoading,
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    statusFilter,
+    setInterviews,
+    setPage,
+    setSearchQuery,
+    setStatusFilter,
+    setLoading,
+  } = useInterviewStore();
 
   useEffect(() => {
     const fetchInterviews = async () => {
-      if (!companyId) {
-        setIsLoading(false);
-        setZustandLoading(false);
-        return;
-      }
+      if (!companyId) return;
 
+      setLoading(true);
       try {
-        setIsLoading(true);
-        setZustandLoading(true);
+        // Calculate offset: Page 1 = 0, Page 2 = 10, Page 3 = 20
+        const offset = (currentPage - 1) * itemsPerPage;
 
-        // Calculate offset based on current page
-        const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
-        const result = await DI.interviewService.getDetailedInterviews(
+        const data = await DI.interviewService.getDetailedInterviews(
           companyId,
           {
-            limit: ITEMS_PER_PAGE,
-            offset,
+            limit: itemsPerPage,
+            offset: offset,
+            status: statusFilter,
             searchQuery: searchQuery || undefined,
-            status: statusFilter || undefined,
-            startDate: dateRange.startDate,
-            endDate: dateRange.endDate,
           },
         );
 
-        // Update local state
-        setInterviews(result.documents);
-        setTotal(result.total);
-        setError(null);
-
-        // Also update Zustand store for Dashboard and other components
-        setZustandInterviews(result.documents, result.total);
-      } catch (err: any) {
-        console.error("Failed to fetch interviews:", err);
-        setError("Could not load interviews. Please try again.");
+        setInterviews(data);
+      } catch (error) {
+        console.error("Failed to fetch interviews", error);
       } finally {
-        setIsLoading(false);
-        setZustandLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchInterviews();
+    // We implement a small debounce for the search query to prevent spamming Appwrite
+    const timeoutId = setTimeout(() => {
+      fetchInterviews();
+    }, 300); // Wait 300ms after user stops typing
+
+    return () => clearTimeout(timeoutId);
   }, [
     companyId,
     currentPage,
+    itemsPerPage,
     searchQuery,
     statusFilter,
-    dateRange,
-    setZustandInterviews,
-    setZustandLoading,
+    setInterviews,
+    setLoading,
   ]);
 
   return {
     interviews,
-    total,
+    total: totalCount,
     isLoading,
-    error,
+    error: null,
     currentPage,
-    setCurrentPage,
+    setCurrentPage: setPage,
     searchQuery,
     setSearchQuery,
     statusFilter,
     setStatusFilter,
-    dateRange,
-    setDateRange,
-    itemsPerPage: ITEMS_PER_PAGE,
+    itemsPerPage,
   };
 };

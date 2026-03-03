@@ -1,42 +1,36 @@
 import { HydratedInterview, PaginatedResult } from "../entities/types";
-import { IInterviewRepository } from "../repositories/IInterviewRepository";
+import {
+  IInterviewRepository,
+  InterviewQueryFilters,
+} from "../repositories/IInterviewRepository";
 import { Interview } from "@/core/entities/interview";
 
 export class InterviewService {
-  constructor(private repo: IInterviewRepository) {}
+  constructor(private readonly repository: IInterviewRepository) {}
 
   async getAll(companyId: string): Promise<Interview[]> {
     if (!companyId) return [];
-    return this.repo.getInterviews(companyId);
+    return this.repository.getInterviews(companyId);
   }
 
   async getById(id: string): Promise<Interview | null> {
-    return this.repo.getInterviewById(id);
+    return this.repository.getInterviewById(id);
   }
 
   async getDetailedInterviews(
     companyId: string,
-    options?: {
-      limit?: number;
-      offset?: number;
-      searchQuery?: string;
-      status?: string;
-      startDate?: string;
-      endDate?: string;
-    },
+    filters?: InterviewQueryFilters,
   ): Promise<PaginatedResult<HydratedInterview>> {
     if (!companyId) return { total: 0, documents: [] };
-    // Call our new batch-fetching method with pagination support
-    return this.repo.getHydratedInterviews(companyId, options);
+    return this.repository.getHydratedInterviews(companyId, filters);
   }
 
-  // Useful for the "Review" page to update scores/status
   async updateStatus(
     id: string,
     status: "completed" | "reviewed",
     score?: number,
   ): Promise<Interview> {
-    return this.repo.updateInterview(id, {
+    return this.repository.updateInterview(id, {
       status,
       ...(score !== undefined && { score }),
     });

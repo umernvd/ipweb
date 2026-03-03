@@ -3,47 +3,40 @@ import { HydratedInterview } from "@/core/entities/types";
 
 interface InterviewState {
   interviews: HydratedInterview[];
-  selectedInterview: HydratedInterview | null;
-
   totalCount: number;
-  currentPage: number;
-  searchQuery: string;
   isLoading: boolean;
+  currentPage: number;
+  itemsPerPage: number;
+  searchQuery: string;
+  statusFilter: string;
 
-  setInterviews: (interviews: HydratedInterview[], totalCount?: number) => void;
-  setSelectedInterview: (interview: HydratedInterview | null) => void;
+  setInterviews: (data: {
+    documents: HydratedInterview[];
+    total: number;
+  }) => void;
+  setPage: (page: number) => void;
   setSearchQuery: (query: string) => void;
-  setCurrentPage: (page: number) => void;
-  updateInterviewStatus: (id: string, status: string, score: number) => void;
+  setStatusFilter: (status: string) => void;
   setLoading: (loading: boolean) => void;
 }
 
 export const useInterviewStore = create<InterviewState>((set) => ({
   interviews: [],
-  selectedInterview: null,
   totalCount: 0,
-  currentPage: 1,
-  searchQuery: "",
   isLoading: false,
+  currentPage: 1,
+  itemsPerPage: 10,
+  searchQuery: "",
+  statusFilter: "All",
 
-  setInterviews: (interviews, totalCount) =>
-    set((state) => ({
-      interviews,
-      totalCount: totalCount ?? state.totalCount,
-    })),
+  setInterviews: (data) =>
+    set({ interviews: data.documents, totalCount: data.total }),
 
-  setSelectedInterview: (selectedInterview) => set({ selectedInterview }),
+  setPage: (currentPage) => set({ currentPage }),
 
-  setSearchQuery: (searchQuery) => set({ searchQuery, currentPage: 1 }), // Reset page on new search
+  setSearchQuery: (searchQuery) => set({ searchQuery, currentPage: 1 }),
 
-  setCurrentPage: (currentPage) => set({ currentPage }),
-
-  updateInterviewStatus: (id, status, score) =>
-    set((state) => ({
-      interviews: state.interviews.map((i) =>
-        i.$id === id ? { ...i, status: status as any, score } : i,
-      ),
-    })),
+  setStatusFilter: (statusFilter) => set({ statusFilter, currentPage: 1 }),
 
   setLoading: (isLoading) => set({ isLoading }),
 }));

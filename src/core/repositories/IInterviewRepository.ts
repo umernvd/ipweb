@@ -1,17 +1,19 @@
 import { Interview } from "@/core/entities/interview";
 import { HydratedInterview, PaginatedResult } from "@/core/entities/types";
 
+export interface InterviewQueryFilters {
+  limit?: number;
+  offset?: number;
+  searchQuery?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface IInterviewRepository {
   getHydratedInterviews(
     companyId: string,
-    options?: {
-      limit?: number;
-      offset?: number;
-      searchQuery?: string;
-      status?: string;
-      startDate?: string;
-      endDate?: string;
-    },
+    filters?: InterviewQueryFilters,
   ): Promise<PaginatedResult<HydratedInterview>>;
   getInterviews(companyId: string): Promise<Interview[]>;
   getInterviewById(id: string): Promise<Interview | null>;
