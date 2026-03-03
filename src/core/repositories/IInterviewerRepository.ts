@@ -7,6 +7,7 @@ export interface IInterviewerRepository {
     name: string;
     email: string;
     status: string;
+    authCode: string;
   }): Promise<Interviewer>;
   updateInterviewer(
     id: string,

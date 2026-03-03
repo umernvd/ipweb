@@ -14,7 +14,19 @@ export class InterviewerService {
     email: string;
     status: string;
   }): Promise<Interviewer> {
-    return this.repository.createInterviewer(data);
+    // Auto-generate a 6-character uppercase auth code (e.g., "A7X9WQ")
+    const generatedAuthCode = Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase();
+
+    // Combine the form data with the new authCode
+    const payloadToSave = {
+      ...data,
+      authCode: generatedAuthCode,
+    };
+
+    return this.repository.createInterviewer(payloadToSave as any);
   }
 
   async update(id: string, data: Partial<Interviewer>): Promise<Interviewer> {
