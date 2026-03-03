@@ -1,10 +1,10 @@
 "use client";
 
-import { Search, Bell, ChevronDown } from "lucide-react";
-import { useUser } from "@/context/UserContext";
+import { Search, Bell } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 
 export const Header = () => {
-  const { fullName } = useUser();
+  const { user } = useAuthStore();
 
   return (
     <header className="sticky top-0 z-10 flex h-20 w-full items-center justify-between border-b border-slate-200 bg-white px-8 py-3 shadow-sm">
@@ -28,7 +28,7 @@ export const Header = () => {
         <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-slate-900 leading-none">
-              {fullName}
+              {user?.name || "Admin"}
             </p>
             <p className="text-xs text-slate-500 mt-1">SPEEDFORCE DIGITAL</p>
           </div>
