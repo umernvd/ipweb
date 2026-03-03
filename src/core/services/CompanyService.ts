@@ -37,4 +37,16 @@ export class CompanyService {
   async updateStatus(id: string, status: "active" | "rejected"): Promise<void> {
     await this.companyRepo.updateStatus(id, status);
   }
+
+  async getGlobalStats(): Promise<{
+    total: number;
+    active: number;
+    pending: number;
+  }> {
+    return this.companyRepo.getGlobalStats();
+  }
+
+  async getPendingCompanies(): Promise<Company[]> {
+    return this.companyRepo.getPendingCompanies();
+  }
 }

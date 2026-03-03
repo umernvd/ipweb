@@ -71,6 +71,47 @@ export class CompanyAppwriteRepository implements ICompanyRepository {
     return this.toDomain(doc);
   }
 
+  async getGlobalStats(): Promise<{
+    total: number;
+    active: number;
+    pending: number;
+  }> {
+    // Fetch all companies to calculate stats
+    const allResponse = await this.databases.listDocuments(
+      this.dbId,
+      this.collectionId,
+      [Query.limit(1)], // Just get the total count
+    );
+    const total = allResponse.total;
+
+    // Fetch active companies count
+    const activeResponse = await this.databases.listDocuments(
+      this.dbId,
+      this.collectionId,
+      [Query.equal("status", "active"), Query.limit(1)],
+    );
+    const active = activeResponse.total;
+
+    // Fetch pending companies count
+    const pendingResponse = await this.databases.listDocuments(
+      this.dbId,
+      this.collectionId,
+      [Query.equal("status", "pending"), Query.limit(1)],
+    );
+    const pending = pendingResponse.total;
+
+    return { total, active, pending };
+  }
+
+  async getPendingCompanies(): Promise<Company[]> {
+    const response = await this.databases.listDocuments(
+      this.dbId,
+      this.collectionId,
+      [Query.equal("status", "pending"), Query.orderDesc("$createdAt")],
+    );
+    return response.documents.map(this.toDomain);
+  }
+
   // Mapper: Appwrite Document -> Domain Entity
   private toDomain(doc: Models.Document): Company {
     // Cast to 'any' to access custom fields not in standard Appwrite types

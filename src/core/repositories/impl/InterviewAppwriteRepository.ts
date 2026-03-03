@@ -91,6 +91,20 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
     await this.databases.deleteDocument(this.databaseId, this.collectionId, id);
   }
 
+  async getGlobalInterviewCount(): Promise<number> {
+    try {
+      const response = await this.databases.listDocuments(
+        this.databaseId,
+        this.collectionId,
+        [Query.limit(1)], // Only fetch metadata, not documents
+      );
+      return response.total;
+    } catch (error) {
+      console.error("Failed to fetch global interview count:", error);
+      return 0;
+    }
+  }
+
   async getHydratedInterviews(
     companyId: string,
     filters?: {
@@ -103,16 +117,8 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
     },
   ): Promise<PaginatedResult<HydratedInterview>> {
     try {
-      // 1. Build dynamic queries
+      // 1. Build dynamic queries WITHOUT search and pagination
       const queries: string[] = [Query.equal("companyId", companyId)];
-
-      // Pagination
-      if (filters?.limit) {
-        queries.push(Query.limit(filters.limit));
-      }
-      if (filters?.offset) {
-        queries.push(Query.offset(filters.offset));
-      }
 
       // Filtering by status
       if (filters?.status) {
@@ -127,15 +133,10 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
         queries.push(Query.lessThanEqual("startedAt", filters.endDate));
       }
 
-      // Search (requires index on candidateName field in Appwrite)
-      if (filters?.searchQuery) {
-        queries.push(Query.search("candidateName", filters.searchQuery));
-      }
-
       // Always order by creation date
       queries.push(Query.orderDesc("$createdAt"));
 
-      // 2. Fetch interviews with total count
+      // 2. Fetch interviews WITHOUT pagination to get all results for filtering
       const response = await this.databases.listDocuments(
         this.databaseId,
         this.collectionId,
@@ -143,7 +144,6 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       );
 
       const rawInterviews = response.documents.map((doc) => this.toDomain(doc));
-      const total = response.total;
 
       if (rawInterviews.length === 0) {
         return { total: 0, documents: [] };
@@ -209,53 +209,64 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       await Promise.all(fetchPromises);
 
       // 5. Hydrate interviews with guaranteed fallback objects
-      const hydratedData: HydratedInterview[] = rawInterviews.map(
-        (interview) => {
-          const candidate = candidates.find(
-            (c) => c.$id === interview.candidateId,
-          );
-          const role = roles.find((r) => r.$id === interview.roleId);
-          const interviewer = interviewers.find(
-            (i) => i.$id === interview.interviewerId,
-          );
+      let hydratedData: HydratedInterview[] = rawInterviews.map((interview) => {
+        const candidate = candidates.find(
+          (c) => c.$id === interview.candidateId,
+        );
+        const role = roles.find((r) => r.$id === interview.roleId);
+        const interviewer = interviewers.find(
+          (i) => i.$id === interview.interviewerId,
+        );
 
-          return {
-            ...interview,
-            candidate: {
-              $id: interview.candidateId,
-              name:
-                candidate?.name ||
-                `Unknown Candidate (${interview.candidateId.substring(0, 6)})`,
-              email: candidate?.email || "No email recorded",
-              phone: candidate?.phone || "No phone recorded",
-              driveFolderId: candidate?.driveFolderId || null,
-            },
-            role: {
-              $id: interview.roleId || "unknown",
-              title: role?.title || "Unspecified Role",
-              level: role?.level || "N/A",
-            },
-            interviewer: {
-              $id: interview.interviewerId || "unknown",
-              name:
-                interviewer?.name ||
-                `Unknown (${interview.interviewerId?.substring(0, 6) || "N/A"})`,
-              email: interviewer?.email || "No email",
-              status: interviewer?.status || "Inactive",
-              companyId: interviewer?.companyId || interview.companyId,
-              $createdAt:
-                interviewer?.$createdAt ||
-                interview.startedAt ||
-                new Date().toISOString(),
-              $updatedAt: interviewer?.$updatedAt || new Date().toISOString(),
-            },
-          };
-        },
-      );
+        return {
+          ...interview,
+          candidate: {
+            $id: interview.candidateId,
+            name:
+              candidate?.name ||
+              `Unknown Candidate (${interview.candidateId.substring(0, 6)})`,
+            email: candidate?.email || "No email recorded",
+            phone: candidate?.phone || "No phone recorded",
+            driveFolderId: candidate?.driveFolderId || null,
+          },
+          role: {
+            $id: interview.roleId || "unknown",
+            title: role?.title || "Unspecified Role",
+            level: role?.level || "N/A",
+          },
+          interviewer: {
+            $id: interview.interviewerId || "unknown",
+            name:
+              interviewer?.name ||
+              `Unknown (${interview.interviewerId?.substring(0, 6) || "N/A"})`,
+            email: interviewer?.email || "No email",
+            status: interviewer?.status || "Inactive",
+            companyId: interviewer?.companyId || interview.companyId,
+            $createdAt:
+              interviewer?.$createdAt ||
+              interview.startedAt ||
+              new Date().toISOString(),
+            $updatedAt: interviewer?.$updatedAt || new Date().toISOString(),
+          },
+        };
+      });
+
+      // 6. Apply in-memory search filter on candidate name
+      if (filters?.searchQuery) {
+        const lowerQuery = filters.searchQuery.toLowerCase();
+        hydratedData = hydratedData.filter((interview) =>
+          interview.candidate?.name.toLowerCase().includes(lowerQuery),
+        );
+      }
+
+      // 7. Apply pagination on the filtered results
+      const offset = filters?.offset || 0;
+      const limit = filters?.limit || 10;
+      const paginatedData = hydratedData.slice(offset, offset + limit);
 
       return {
-        total,
-        documents: hydratedData,
+        total: hydratedData.length, // Total after search filter is applied
+        documents: paginatedData,
       };
     } catch (error) {
       console.error("Failed to hydrate interviews:", error);

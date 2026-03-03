@@ -35,4 +35,8 @@ export class InterviewService {
       ...(score !== undefined && { score }),
     });
   }
+
+  async getGlobalInterviewCount(): Promise<number> {
+    return this.repository.getGlobalInterviewCount();
+  }
 }

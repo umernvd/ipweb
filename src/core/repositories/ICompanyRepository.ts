@@ -5,4 +5,10 @@ export interface ICompanyRepository {
   updateStatus(id: string, status: CompanyStatus): Promise<void>;
   findById(id: string): Promise<Company | null>;
   create(company: Omit<Company, "$id" | "$createdAt">): Promise<Company>;
+  getGlobalStats(): Promise<{
+    total: number;
+    active: number;
+    pending: number;
+  }>;
+  getPendingCompanies(): Promise<Company[]>;
 }

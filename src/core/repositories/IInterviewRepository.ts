@@ -19,4 +19,5 @@ export interface IInterviewRepository {
   getInterviewById(id: string): Promise<Interview | null>;
   updateInterview(id: string, data: Partial<Interview>): Promise<Interview>;
   deleteInterview(id: string): Promise<void>;
+  getGlobalInterviewCount(): Promise<number>;
 }
