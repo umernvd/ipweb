@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLevelStore } from "@/stores/levelStore";
 import { useRoleStore } from "@/stores/roleStore";
+import { useAuthStore } from "@/stores/authStore";
 import { Plus, Trash2, Loader2, X as XIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,7 @@ import {
 export const LevelsList = () => {
   const { levels, isLoading, addLevel, removeLevel } = useLevelStore();
   const { selectedRoleId } = useRoleStore();
+  const { companyId } = useAuthStore();
   const [isAdding, setIsAdding] = useState(false);
 
   // FIX 1: Removed explicit <LevelFormValues> generic.
@@ -34,12 +36,12 @@ export const LevelsList = () => {
   });
 
   const onSubmit = async (data: LevelFormValues) => {
-    if (!selectedRoleId) return;
+    if (!selectedRoleId || !companyId) return;
 
     await addLevel({
       ...data,
       roleId: selectedRoleId,
-      companyId: "demo-company-id", // Replace with actual company ID from auth store
+      companyId: companyId,
       // FIX 2: Ensure description is a string (DB requires it), even if optional in form
       description: data.description || "",
     });
