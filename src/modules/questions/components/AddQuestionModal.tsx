@@ -35,13 +35,14 @@ export function AddQuestionModal({ onClose }: AddQuestionModalProps) {
   const { levels, isLoading: isLoadingLevels } = useLevels(selectedRoleId);
 
   const onSubmit = async (data: QuestionFormValues) => {
-    const success = await createQuestion(
-      data.questionText,
-      data.roleId,
-      data.levelId,
-      data.section,
-      data.difficulty,
-    );
+    const success = await createQuestion({
+      companyId: "", // Will be set by the hook
+      question: data.question,
+      roleId: data.roleId,
+      experienceLevelId: data.experienceLevelId,
+      category: data.category,
+      difficulty: data.difficulty,
+    });
 
     if (success) {
       onClose();
@@ -70,14 +71,14 @@ export function AddQuestionModal({ onClose }: AddQuestionModalProps) {
               Question Text
             </label>
             <textarea
-              {...register("questionText")}
+              {...register("question")}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               rows={3}
               placeholder="e.g., Explain the difference between StatefulWidget and StatelessWidget..."
             />
-            {errors.questionText && (
+            {errors.question && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.questionText.message}
+                {errors.question.message}
               </p>
             )}
           </div>
@@ -112,7 +113,7 @@ export function AddQuestionModal({ onClose }: AddQuestionModalProps) {
                 Level
               </label>
               <select
-                {...register("levelId")}
+                {...register("experienceLevelId")}
                 className="w-full px-3 py-2 border rounded-lg bg-white disabled:bg-slate-50"
                 disabled={!selectedRoleId || isLoadingLevels}
               >
@@ -125,32 +126,32 @@ export function AddQuestionModal({ onClose }: AddQuestionModalProps) {
                   </option>
                 ))}
               </select>
-              {errors.levelId && (
+              {errors.experienceLevelId && (
                 <p className="text-red-500 text-xs mt-1">
-                  {errors.levelId.message}
+                  {errors.experienceLevelId.message}
                 </p>
               )}
             </div>
 
-            {/* SECTION DROPDOWN */}
+            {/* CATEGORY DROPDOWN */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Section
+                Category
               </label>
               <select
-                {...register("section")}
+                {...register("category")}
                 className="w-full px-3 py-2 border rounded-lg bg-white"
               >
-                <option value="">Select a Section...</option>
+                <option value="">Select a Category...</option>
                 <option value="Technical Basics">Technical Basics</option>
                 <option value="OOP">OOP</option>
                 <option value="Problem Solving">Problem Solving</option>
                 <option value="Live Scenario">Live Scenario</option>
                 <option value="Communication">Communication</option>
               </select>
-              {errors.section && (
+              {errors.category && (
                 <p className="text-red-500 text-xs mt-1">
-                  {errors.section.message}
+                  {errors.category.message}
                 </p>
               )}
             </div>

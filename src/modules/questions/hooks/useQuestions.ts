@@ -45,31 +45,36 @@ export const useQuestions = () => {
     return questions.filter((q) => {
       // If a filter is active, check if the question matches. If no filter is active, it passes.
       const matchesRole = activeRoleId ? q.roleId === activeRoleId : true;
-      const matchesLevel = activeLevelId ? q.levelId === activeLevelId : true;
-      const matchesSection = activeSection ? q.section === activeSection : true;
+      const matchesLevel = activeLevelId
+        ? q.experienceLevelId === activeLevelId
+        : true;
+      const matchesSection = activeSection
+        ? q.category === activeSection
+        : true;
 
       return matchesRole && matchesLevel && matchesSection;
     });
   }, [questions, activeRoleId, activeLevelId, activeSection]);
 
   // --- CREATE ---
-  const createQuestion = async (
-    questionText: string,
-    roleId: string,
-    levelId: string,
-    section: string,
-    difficulty: string,
-  ) => {
+  const createQuestion = async (data: {
+    companyId: string;
+    question: string;
+    roleId: string;
+    experienceLevelId: string;
+    category: string;
+    difficulty: string;
+  }) => {
     if (!companyId) return false;
     setIsMutating(true);
     try {
       const newQuestion = await DI.questionService.create({
         companyId,
-        questionText,
-        roleId,
-        levelId,
-        section,
-        difficulty,
+        question: data.question,
+        roleId: data.roleId,
+        experienceLevelId: data.experienceLevelId,
+        category: data.category,
+        difficulty: data.difficulty,
       });
       addQuestionToStore(newQuestion);
       return true;
