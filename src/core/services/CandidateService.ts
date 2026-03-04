@@ -1,4 +1,4 @@
-import { ICandidateRepository } from "../repositories/impl/CandidateAppwriteRepository";
+import { ICandidateRepository } from "../repositories/ICandidateRepository";
 import { Candidate } from "../entities/candidate";
 
 export class CandidateService {
@@ -9,9 +9,15 @@ export class CandidateService {
   }
 
   async addCandidate(
-    data: Omit<Candidate, "$id" | "createdAt">,
+    data: Omit<Candidate, "$id" | "createdAt" | "updatedAt">,
   ): Promise<Candidate> {
-    // Business Logic: Check for duplicate emails here in the future
-    return this.repo.create(data);
+    const payload = {
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    return this.repo.create(
+      payload as Omit<Candidate, "$id" | "createdAt" | "updatedAt">,
+    );
   }
 }

@@ -1,11 +1,13 @@
-export type CandidateStatus = "pending" | "active" | "rejected" | "hired";
-
 export interface Candidate {
   $id: string;
   name: string;
   email: string;
-  status: CandidateStatus;
-  resumeUrl?: string;
+  interviewerId: string;
   companyId: string;
-  createdAt: string;
+  phone?: string;
+  cvFileUrl?: string;
+  cvFileId?: string;
+  driveFolderId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

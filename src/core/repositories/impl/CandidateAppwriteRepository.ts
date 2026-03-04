@@ -1,10 +1,6 @@
 import { Databases, Query, ID, Models } from "appwrite";
-import { Candidate, CandidateStatus } from "@/core/entities/candidate";
-
-export interface ICandidateRepository {
-  list(companyId: string): Promise<Candidate[]>;
-  create(data: Omit<Candidate, "$id" | "createdAt">): Promise<Candidate>;
-}
+import { Candidate } from "@/core/entities/candidate";
+import { ICandidateRepository } from "../ICandidateRepository";
 
 export class CandidateAppwriteRepository implements ICandidateRepository {
   constructor(private databases: Databases) {}
@@ -15,10 +11,12 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
       "candidates",
       [Query.equal("companyId", companyId), Query.orderDesc("$createdAt")],
     );
-    return response.documents.map(this.toDomain);
+    return response.documents.map((doc) => this.toDomain(doc));
   }
 
-  async create(data: Omit<Candidate, "$id" | "createdAt">): Promise<Candidate> {
+  async create(
+    data: Omit<Candidate, "$id" | "createdAt" | "updatedAt">,
+  ): Promise<Candidate> {
     const doc = await this.databases.createDocument(
       "interview_pro_db",
       "candidates",
@@ -34,10 +32,14 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
       $id: d.$id,
       name: d.name,
       email: d.email,
-      status: d.status as CandidateStatus,
-      resumeUrl: d.resumeUrl,
+      interviewerId: d.interviewerId,
       companyId: d.companyId,
+      phone: d.phone,
+      cvFileUrl: d.cvFileUrl,
+      cvFileId: d.cvFileId,
+      driveFolderId: d.driveFolderId,
       createdAt: d.$createdAt,
+      updatedAt: d.$updatedAt,
     };
   }
 }
