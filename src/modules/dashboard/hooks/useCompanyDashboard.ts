@@ -91,7 +91,7 @@ export const useCompanyDashboard = (): DashboardMetrics => {
         // Fetch all required data in parallel
         const [interviewers, roles, interviewsResponse] = await Promise.all([
           DI.interviewerService.getAll(companyId),
-          DI.roleService.getAll(companyId),
+          DI.roleService.getCompanyRoles(companyId),
           DI.interviewService.getDetailedInterviews(companyId, {
             limit: 50,
           }),
