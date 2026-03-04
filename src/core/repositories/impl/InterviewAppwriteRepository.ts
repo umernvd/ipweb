@@ -52,7 +52,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       const response = await this.databases.listDocuments(
         this.databaseId,
         this.collectionId,
-        [Query.equal("companyId", companyId), Query.orderDesc("$createdAt")],
+        [Query.equal("companyId", companyId)],
       );
       return response.documents.map((doc) => this.toDomain(doc));
     } catch (error) {
