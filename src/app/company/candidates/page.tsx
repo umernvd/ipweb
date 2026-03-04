@@ -1,100 +1,140 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { DI } from "@/core/di/container";
-import { Candidate } from "@/core/entities/candidate";
-import { Plus, User, Mail, Calendar } from "lucide-react";
+import { useCandidates } from "@/modules/candidates/hooks/useCandidates";
+import { useInterviewers } from "@/modules/interviews/hooks/useInterviewers";
+import { Mail, Phone, Users, FileText } from "lucide-react";
 
 export default function CandidatesPage() {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const COMPANY_ID = "demo-company-id";
+  const { candidates, isLoading } = useCandidates();
+  const { interviewers } = useInterviewers();
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await DI.candidateService.getCandidates(COMPANY_ID);
-        setCandidates(data);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, []);
+  // Helper function to get interviewer name by ID
+  const getInterviewerName = (interviewerId: string): string => {
+    const interviewer = interviewers.find((i) => i.$id === interviewerId);
+    return interviewer?.name || "Unknown";
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Candidates</h1>
-          <p className="text-sm text-slate-500">
-            Manage applicants and track their status.
-          </p>
-        </div>
-        <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-primary-hover">
-          <Plus size={16} /> Add Candidate
-        </button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Candidates</h1>
+        <p className="text-sm text-slate-500">
+          View candidates generated from the mobile app.
+        </p>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
-            <tr>
-              <th className="px-6 py-3">Candidate</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Applied Date</th>
-              <th className="px-6 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {candidates.map((c) => (
-              <tr key={c.$id} className="hover:bg-slate-50/50">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                      {c.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-medium text-slate-900">{c.name}</div>
-                      <div className="text-xs text-slate-500 flex items-center gap-1">
-                        <Mail size={10} /> {c.email}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs capitalize ${
-                      c.status === "hired"
-                        ? "bg-green-100 text-green-700"
-                        : c.status === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {c.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-slate-500">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={12} />{" "}
-                    {new Date(c.createdAt).toLocaleDateString()}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-primary hover:underline text-xs font-medium">
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {candidates.length === 0 && !isLoading && (
-          <div className="p-12 text-center text-slate-500">
-            No candidates found.
-          </div>
-        )}
+        <div className="overflow-x-auto">
+          {isLoading ? (
+            <div className="flex justify-center items-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : candidates.length === 0 ? (
+            <div className="p-12 text-center text-slate-500">
+              No candidates found. Candidates will appear here when generated
+              from the mobile app.
+            </div>
+          ) : (
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Interviewer
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    CV
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {candidates.map((candidate) => {
+                  const initials = candidate.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+
+                  const colors = [
+                    "bg-blue-100 text-blue-700",
+                    "bg-purple-100 text-purple-700",
+                    "bg-pink-100 text-pink-700",
+                    "bg-green-100 text-green-700",
+                    "bg-yellow-100 text-yellow-700",
+                  ];
+                  const colorIndex =
+                    candidate.name.charCodeAt(0) % colors.length;
+                  const color = colors[colorIndex];
+
+                  return (
+                    <tr key={candidate.$id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${color}`}
+                          >
+                            {initials}
+                          </div>
+                          <span className="font-medium text-slate-900">
+                            {candidate.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500">
+                        <div className="flex items-center gap-2">
+                          <Mail size={14} className="text-slate-400" />
+                          {candidate.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500">
+                        {candidate.phone ? (
+                          <div className="flex items-center gap-2">
+                            <Phone size={14} className="text-slate-400" />
+                            {candidate.phone}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Users size={14} className="text-slate-400" />
+                          <span className="text-slate-900">
+                            {getInterviewerName(candidate.interviewerId)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {candidate.cvFileUrl ? (
+                          <a
+                            href={candidate.cvFileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-primary hover:text-primary-hover transition-colors"
+                          >
+                            <FileText size={14} />
+                            View CV
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );

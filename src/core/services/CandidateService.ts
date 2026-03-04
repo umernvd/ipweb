@@ -11,13 +11,6 @@ export class CandidateService {
   async addCandidate(
     data: Omit<Candidate, "$id" | "createdAt" | "updatedAt">,
   ): Promise<Candidate> {
-    const payload = {
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    return this.repo.create(
-      payload as Omit<Candidate, "$id" | "createdAt" | "updatedAt">,
-    );
+    return this.repo.create(data);
   }
 }

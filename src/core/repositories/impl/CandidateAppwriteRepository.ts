@@ -9,7 +9,7 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
     const response = await this.databases.listDocuments(
       "interview_pro_db",
       "candidates",
-      [Query.equal("companyId", companyId), Query.orderDesc("$createdAt")],
+      [Query.equal("companyId", companyId)],
     );
     return response.documents.map((doc) => this.toDomain(doc));
   }
@@ -30,14 +30,14 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
     const d = doc as any;
     return {
       $id: d.$id,
-      name: d.name,
-      email: d.email,
-      interviewerId: d.interviewerId,
-      companyId: d.companyId,
-      phone: d.phone,
-      cvFileUrl: d.cvFileUrl,
-      cvFileId: d.cvFileId,
-      driveFolderId: d.driveFolderId,
+      name: d.name || "",
+      email: d.email || "",
+      interviewerId: d.interviewerId || "",
+      companyId: d.companyId || "",
+      phone: d.phone || null,
+      cvFileUrl: d.cvFileUrl || null,
+      cvFileId: d.cvFileId || null,
+      driveFolderId: d.driveFolderId || null,
       createdAt: d.$createdAt,
       updatedAt: d.$updatedAt,
     };
