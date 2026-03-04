@@ -4,11 +4,12 @@ export interface IQuestionRepository {
   getQuestions(companyId: string): Promise<Question[]>;
   createQuestion(data: {
     companyId: string;
-    questionText: string;
+    question: string;
     roleId: string;
-    levelId: string;
-    section: string;
+    experienceLevelId: string;
+    category: string;
     difficulty: string;
+    isActive: boolean;
   }): Promise<Question>;
   updateQuestion(id: string, data: Partial<Question>): Promise<Question>;
   deleteQuestion(id: string): Promise<void>;

@@ -8,13 +8,28 @@ export class QuestionAppwriteRepository implements IQuestionRepository {
     private readonly databaseId: string,
   ) {}
 
+  private toDomain(doc: any): Question {
+    return {
+      $id: doc.$id,
+      question: doc.question,
+      roleId: doc.roleId,
+      experienceLevelId: doc.experienceLevelId,
+      category: doc.category,
+      difficulty: doc.difficulty,
+      companyId: doc.companyId,
+      isActive: doc.isActive,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    };
+  }
+
   async getQuestions(companyId: string): Promise<Question[]> {
     const response = await this.databases.listDocuments(
       this.databaseId,
       "questions",
       [Query.equal("companyId", companyId)],
     );
-    return response.documents as unknown as Question[];
+    return response.documents.map((doc) => this.toDomain(doc));
   }
 
   async createQuestion(data: any): Promise<Question> {
@@ -24,7 +39,7 @@ export class QuestionAppwriteRepository implements IQuestionRepository {
       ID.unique(),
       data,
     );
-    return response as unknown as Question;
+    return this.toDomain(response);
   }
 
   async updateQuestion(id: string, data: Partial<Question>): Promise<Question> {
@@ -34,7 +49,7 @@ export class QuestionAppwriteRepository implements IQuestionRepository {
       id,
       data,
     );
-    return response as unknown as Question;
+    return this.toDomain(response);
   }
 
   async deleteQuestion(id: string): Promise<void> {

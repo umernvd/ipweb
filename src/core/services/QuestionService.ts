@@ -10,13 +10,16 @@ export class QuestionService {
 
   async create(data: {
     companyId: string;
-    questionText: string;
+    question: string;
     roleId: string;
-    levelId: string;
-    section: string;
+    experienceLevelId: string;
+    category: string;
     difficulty: string;
   }): Promise<Question> {
-    return this.repository.createQuestion(data);
+    return this.repository.createQuestion({
+      ...data,
+      isActive: true,
+    });
   }
 
   async update(id: string, data: Partial<Question>): Promise<Question> {

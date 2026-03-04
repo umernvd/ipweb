@@ -1,11 +1,12 @@
 export interface Question {
   $id: string;
-  text: string;
+  question: string;
   roleId: string;
-  levelId: string;
-  section: string;
+  experienceLevelId: string;
+  category: string;
   difficulty: "Easy" | "Medium" | "Hard";
   companyId: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
