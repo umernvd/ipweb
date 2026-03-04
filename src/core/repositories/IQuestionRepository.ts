@@ -10,6 +10,8 @@ export interface IQuestionRepository {
     category: string;
     difficulty: string;
     isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
   }): Promise<Question>;
   updateQuestion(id: string, data: Partial<Question>): Promise<Question>;
   deleteQuestion(id: string): Promise<void>;

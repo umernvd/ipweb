@@ -16,9 +16,12 @@ export class QuestionService {
     category: string;
     difficulty: string;
   }): Promise<Question> {
+    const now = new Date().toISOString();
     return this.repository.createQuestion({
       ...data,
       isActive: true,
+      createdAt: now,
+      updatedAt: now,
     });
   }
 
