@@ -27,7 +27,7 @@ export const useInterviewStore = create<InterviewState>((set) => ({
   currentPage: 1,
   itemsPerPage: 10,
   searchQuery: "",
-  statusFilter: "All",
+  statusFilter: "",
 
   setInterviews: (data) =>
     set({ interviews: data.documents, totalCount: data.total }),
