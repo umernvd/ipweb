@@ -1,6 +1,7 @@
-import { Databases, ID, Query } from "appwrite";
+import { Databases, ID, Query, Permission, Role } from "appwrite";
 import { IInterviewerRepository } from "../IInterviewerRepository";
 import { Interviewer } from "../../entities/types";
+import { useAuthStore } from "@/stores/authStore";
 
 export class InterviewerAppwriteRepository implements IInterviewerRepository {
   constructor(
@@ -23,11 +24,29 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
     email: string;
     status: string;
   }): Promise<Interviewer> {
+    // Get current user ID from auth store for permission assignment
+    const { user } = useAuthStore.getState();
+    const currentAdminUserId = user?.$id;
+
+    // Build permissions array
+    // - Allow any unauthenticated user to read (for mobile login phase)
+    // - Allow current admin to update and delete
+    const permissions = [
+      Permission.read(Role.any()),
+      ...(currentAdminUserId
+        ? [
+            Permission.update(Role.user(currentAdminUserId)),
+            Permission.delete(Role.user(currentAdminUserId)),
+          ]
+        : []),
+    ];
+
     const response = await this.databases.createDocument(
       this.databaseId,
       "interviewers",
       ID.unique(),
       data,
+      permissions,
     );
     return response as unknown as Interviewer;
   }

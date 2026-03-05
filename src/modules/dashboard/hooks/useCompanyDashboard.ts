@@ -102,7 +102,7 @@ export const useCompanyDashboard = (): DashboardMetrics => {
         const activeRoles = roles.length;
         const totalInterviews = interviewsResponse.total;
         const pendingInterviews = interviewsResponse.documents.filter(
-          (interview) => interview.status === "Pending",
+          (interview) => interview.status === "pending",
         ).length;
         const recentInterviews = interviewsResponse.documents.slice(0, 5);
         const chartData = generateWeeklyChartData(interviewsResponse.documents);
