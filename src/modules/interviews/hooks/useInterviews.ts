@@ -13,11 +13,14 @@ export const useInterviews = () => {
     itemsPerPage,
     searchQuery,
     statusFilter,
+    error,
     setInterviews,
     setPage,
     setSearchQuery,
     setStatusFilter,
     setLoading,
+    setError,
+    clearError,
   } = useInterviewStore();
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export const useInterviews = () => {
       if (!companyId) return;
 
       setLoading(true);
+      clearError();
       try {
         // Calculate offset: Page 1 = 0, Page 2 = 10, Page 3 = 20
         const offset = (currentPage - 1) * itemsPerPage;
@@ -40,8 +44,11 @@ export const useInterviews = () => {
         );
 
         setInterviews(data);
-      } catch (error) {
-        console.error("Failed to fetch interviews", error);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch interviews";
+        setError(errorMessage);
+        console.error("Failed to fetch interviews", err);
       } finally {
         setLoading(false);
       }
@@ -61,13 +68,15 @@ export const useInterviews = () => {
     statusFilter,
     setInterviews,
     setLoading,
+    setError,
+    clearError,
   ]);
 
   return {
     interviews,
     total: totalCount,
     isLoading,
-    error: null,
+    error,
     currentPage,
     setCurrentPage: setPage,
     searchQuery,

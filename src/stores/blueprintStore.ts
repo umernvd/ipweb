@@ -6,6 +6,7 @@ interface BlueprintStore {
   blueprints: Blueprint[];
   isLoading: boolean;
   selectedBlueprintId: string | null;
+  error: string | null;
 
   fetchBlueprints: (companyId: string, roleId?: string) => Promise<void>;
   addBlueprint: (
@@ -13,15 +14,18 @@ interface BlueprintStore {
   ) => Promise<void>;
   removeBlueprint: (id: string) => Promise<void>;
   setSelectedBlueprint: (id: string | null) => void;
+  setError: (error: string) => void;
+  clearError: () => void;
 }
 
 export const useBlueprintStore = create<BlueprintStore>((set, get) => ({
   blueprints: [],
   isLoading: false,
   selectedBlueprintId: null,
+  error: null,
 
   fetchBlueprints: async (companyId, roleId) => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
       const blueprints = await DI.blueprintService.getCompanyBlueprints(
         companyId,
@@ -29,8 +33,10 @@ export const useBlueprintStore = create<BlueprintStore>((set, get) => ({
       );
       set({ blueprints, isLoading: false });
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch blueprints";
+      set({ error: errorMessage, isLoading: false });
       console.error(err);
-      set({ isLoading: false });
     }
   },
 
@@ -45,6 +51,7 @@ export const useBlueprintStore = create<BlueprintStore>((set, get) => ({
     set((state) => ({
       blueprints: [tempBlueprint, ...state.blueprints],
       selectedBlueprintId: tempId,
+      error: null,
     }));
 
     try {
@@ -61,12 +68,15 @@ export const useBlueprintStore = create<BlueprintStore>((set, get) => ({
             : state.selectedBlueprintId,
       }));
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add blueprint";
       set((state) => ({
         blueprints: state.blueprints.filter((b) => b.$id !== tempId),
         selectedBlueprintId:
           state.selectedBlueprintId === tempId
             ? null
             : state.selectedBlueprintId,
+        error: errorMessage,
       }));
       console.error("Failed to add blueprint", err);
     }
@@ -79,18 +89,24 @@ export const useBlueprintStore = create<BlueprintStore>((set, get) => ({
     set({
       blueprints: originalBlueprints.filter((b) => b.$id !== id),
       selectedBlueprintId: isSelected ? null : get().selectedBlueprintId,
+      error: null,
     });
 
     try {
       await DI.blueprintService.deleteBlueprint(id);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete blueprint";
       set({
         blueprints: originalBlueprints,
         selectedBlueprintId: get().selectedBlueprintId,
+        error: errorMessage,
       });
       console.error("Failed to delete blueprint", err);
     }
   },
 
   setSelectedBlueprint: (id) => set({ selectedBlueprintId: id }),
+  setError: (error: string) => set({ error }),
+  clearError: () => set({ error: null }),
 }));

@@ -8,6 +8,7 @@ interface QuestionState {
   activeLevelId: string | null;
   activeSection: string | null;
   isLoading: boolean;
+  error: string | null;
 
   setQuestions: (questions: Question[]) => void;
   addQuestion: (question: Question) => void;
@@ -19,6 +20,8 @@ interface QuestionState {
   }) => void;
   clearFilters: () => void;
   setLoading: (loading: boolean) => void;
+  setError: (error: string) => void;
+  clearError: () => void;
 }
 
 export const useQuestionStore = create<QuestionState>((set) => ({
@@ -27,8 +30,9 @@ export const useQuestionStore = create<QuestionState>((set) => ({
   activeLevelId: null,
   activeSection: null,
   isLoading: false,
+  error: null,
 
-  setQuestions: (questions) => set({ questions }),
+  setQuestions: (questions) => set({ questions, error: null }),
   addQuestion: (question) =>
     set((state) => ({ questions: [question, ...state.questions] })),
   removeQuestion: (id) =>
@@ -39,4 +43,6 @@ export const useQuestionStore = create<QuestionState>((set) => ({
   clearFilters: () =>
     set({ activeRoleId: null, activeLevelId: null, activeSection: null }),
   setLoading: (isLoading) => set({ isLoading }),
+  setError: (error: string) => set({ error }),
+  clearError: () => set({ error: null }),
 }));

@@ -16,6 +16,7 @@ interface InterviewerState {
   setSelectedInterviewer: (interviewer: Interviewer | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  clearError: () => void;
 }
 
 export const useInterviewerStore = create<InterviewerState>((set) => ({
@@ -42,4 +43,5 @@ export const useInterviewerStore = create<InterviewerState>((set) => ({
   setSelectedInterviewer: (selectedInterviewer) => set({ selectedInterviewer }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
 }));

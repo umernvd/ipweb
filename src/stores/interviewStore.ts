@@ -9,6 +9,7 @@ interface InterviewState {
   itemsPerPage: number;
   searchQuery: string;
   statusFilter: string;
+  error: string | null;
 
   setInterviews: (data: {
     documents: HydratedInterview[];
@@ -18,6 +19,8 @@ interface InterviewState {
   setSearchQuery: (query: string) => void;
   setStatusFilter: (status: string) => void;
   setLoading: (loading: boolean) => void;
+  setError: (error: string) => void;
+  clearError: () => void;
 }
 
 export const useInterviewStore = create<InterviewState>((set) => ({
@@ -28,9 +31,10 @@ export const useInterviewStore = create<InterviewState>((set) => ({
   itemsPerPage: 10,
   searchQuery: "",
   statusFilter: "",
+  error: null,
 
   setInterviews: (data) =>
-    set({ interviews: data.documents, totalCount: data.total }),
+    set({ interviews: data.documents, totalCount: data.total, error: null }),
 
   setPage: (currentPage) => set({ currentPage }),
 
@@ -39,4 +43,8 @@ export const useInterviewStore = create<InterviewState>((set) => ({
   setStatusFilter: (statusFilter) => set({ statusFilter, currentPage: 1 }),
 
   setLoading: (isLoading) => set({ isLoading }),
+
+  setError: (error: string) => set({ error }),
+
+  clearError: () => set({ error: null }),
 }));

@@ -5,22 +5,33 @@ import { DI } from "@/core/di/container";
 interface LevelStore {
   levels: Level[];
   isLoading: boolean;
+  error: string | null;
 
   fetchLevels: (companyId: string, roleId?: string) => Promise<void>;
   addLevel: (level: Omit<Level, "$id" | "isActive">) => Promise<void>;
   removeLevel: (id: string) => Promise<void>;
+  setError: (error: string) => void;
+  clearError: () => void;
 }
 
 export const useLevelStore = create<LevelStore>((set, get) => ({
   levels: [],
   isLoading: false,
+  error: null,
 
   fetchLevels: async (companyId, roleId) => {
-    set({ isLoading: true });
-    const levels = roleId
-      ? await DI.levelService.getLevels(companyId, roleId)
-      : [];
-    set({ levels, isLoading: false });
+    set({ isLoading: true, error: null });
+    try {
+      const levels = roleId
+        ? await DI.levelService.getLevels(companyId, roleId)
+        : [];
+      set({ levels, isLoading: false });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch levels";
+      set({ error: errorMessage, isLoading: false });
+      console.error(err);
+    }
   },
 
   addLevel: async (newLevelData) => {
@@ -31,6 +42,7 @@ export const useLevelStore = create<LevelStore>((set, get) => ({
       levels: [...state.levels, tempLevel].sort(
         (a, b) => a.sortOrder - b.sortOrder,
       ),
+      error: null,
     }));
 
     try {
@@ -39,19 +51,29 @@ export const useLevelStore = create<LevelStore>((set, get) => ({
         levels: state.levels.map((l) => (l.$id === tempId ? createdLevel : l)),
       }));
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add level";
       set((state) => ({
         levels: state.levels.filter((l) => l.$id !== tempId),
+        error: errorMessage,
       }));
+      console.error(err);
     }
   },
 
   removeLevel: async (id) => {
     const originalLevels = get().levels;
-    set({ levels: originalLevels.filter((l) => l.$id !== id) });
+    set({ levels: originalLevels.filter((l) => l.$id !== id), error: null });
     try {
       await DI.levelService.removeLevel(id);
     } catch (err) {
-      set({ levels: originalLevels });
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to delete level";
+      set({ levels: originalLevels, error: errorMessage });
+      console.error(err);
     }
   },
+
+  setError: (error: string) => set({ error }),
+  clearError: () => set({ error: null }),
 }));
