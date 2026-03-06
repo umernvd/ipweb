@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Interviewer } from "@/core/entities/types";
 
 interface InterviewerState {
@@ -19,29 +20,37 @@ interface InterviewerState {
   clearError: () => void;
 }
 
-export const useInterviewerStore = create<InterviewerState>((set) => ({
-  interviewers: [],
-  selectedInterviewer: null,
-  isLoading: false,
-  error: null,
+export const useInterviewerStore = create<InterviewerState>()(
+  persist(
+    (set) => ({
+      interviewers: [],
+      selectedInterviewer: null,
+      isLoading: false,
+      error: null,
 
-  setInterviewers: (interviewers) => set({ interviewers, error: null }),
-  addInterviewer: (interviewer) =>
-    set((state) => ({
-      interviewers: [interviewer, ...state.interviewers],
-    })),
-  updateInterviewer: (id, updatedData) =>
-    set((state) => ({
-      interviewers: state.interviewers.map((i) =>
-        i.$id === id ? { ...i, ...updatedData } : i,
-      ),
-    })),
-  removeInterviewer: (id) =>
-    set((state) => ({
-      interviewers: state.interviewers.filter((i) => i.$id !== id),
-    })),
-  setSelectedInterviewer: (selectedInterviewer) => set({ selectedInterviewer }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
-  clearError: () => set({ error: null }),
-}));
+      setInterviewers: (interviewers) => set({ interviewers, error: null }),
+      addInterviewer: (interviewer) =>
+        set((state) => ({
+          interviewers: [interviewer, ...state.interviewers],
+        })),
+      updateInterviewer: (id, updatedData) =>
+        set((state) => ({
+          interviewers: state.interviewers.map((i) =>
+            i.$id === id ? { ...i, ...updatedData } : i,
+          ),
+        })),
+      removeInterviewer: (id) =>
+        set((state) => ({
+          interviewers: state.interviewers.filter((i) => i.$id !== id),
+        })),
+      setSelectedInterviewer: (selectedInterviewer) =>
+        set({ selectedInterviewer }),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: "interviewer-storage",
+    },
+  ),
+);

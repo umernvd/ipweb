@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Candidate } from "@/core/entities/candidate";
 
 interface CandidateState {
@@ -13,19 +14,26 @@ interface CandidateState {
   clearError: () => void;
 }
 
-export const useCandidateStore = create<CandidateState>((set) => ({
-  candidates: [],
-  isLoading: false,
-  error: null,
+export const useCandidateStore = create<CandidateState>()(
+  persist(
+    (set) => ({
+      candidates: [],
+      isLoading: false,
+      error: null,
 
-  setCandidates: (candidates) => set({ candidates, error: null }),
-  updateCandidate: (id, data) =>
-    set((state) => ({
-      candidates: state.candidates.map((c) =>
-        c.$id === id ? { ...c, ...data } : c,
-      ),
-    })),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error: string) => set({ error }),
-  clearError: () => set({ error: null }),
-}));
+      setCandidates: (candidates) => set({ candidates, error: null }),
+      updateCandidate: (id, data) =>
+        set((state) => ({
+          candidates: state.candidates.map((c) =>
+            c.$id === id ? { ...c, ...data } : c,
+          ),
+        })),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error: string) => set({ error }),
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: "candidate-storage",
+    },
+  ),
+);

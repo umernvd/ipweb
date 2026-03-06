@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Question } from "@/core/entities/question";
 
 interface QuestionState {
@@ -24,25 +25,32 @@ interface QuestionState {
   clearError: () => void;
 }
 
-export const useQuestionStore = create<QuestionState>((set) => ({
-  questions: [],
-  activeRoleId: null,
-  activeLevelId: null,
-  activeSection: null,
-  isLoading: false,
-  error: null,
+export const useQuestionStore = create<QuestionState>()(
+  persist(
+    (set) => ({
+      questions: [],
+      activeRoleId: null,
+      activeLevelId: null,
+      activeSection: null,
+      isLoading: false,
+      error: null,
 
-  setQuestions: (questions) => set({ questions, error: null }),
-  addQuestion: (question) =>
-    set((state) => ({ questions: [question, ...state.questions] })),
-  removeQuestion: (id) =>
-    set((state) => ({
-      questions: state.questions.filter((q) => q.$id !== id),
-    })),
-  setFilters: (filters) => set((state) => ({ ...state, ...filters })),
-  clearFilters: () =>
-    set({ activeRoleId: null, activeLevelId: null, activeSection: null }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error: string) => set({ error }),
-  clearError: () => set({ error: null }),
-}));
+      setQuestions: (questions) => set({ questions, error: null }),
+      addQuestion: (question) =>
+        set((state) => ({ questions: [question, ...state.questions] })),
+      removeQuestion: (id) =>
+        set((state) => ({
+          questions: state.questions.filter((q) => q.$id !== id),
+        })),
+      setFilters: (filters) => set((state) => ({ ...state, ...filters })),
+      clearFilters: () =>
+        set({ activeRoleId: null, activeLevelId: null, activeSection: null }),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error: string) => set({ error }),
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: "question-storage",
+    },
+  ),
+);
