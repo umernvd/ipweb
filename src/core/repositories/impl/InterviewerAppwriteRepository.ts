@@ -29,17 +29,15 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
     const currentAdminUserId = user?.$id;
 
     // Build permissions array
-    // - Allow any unauthenticated user to read (for mobile login phase)
-    // - Allow current admin to update and delete
-    const permissions = [
-      Permission.read(Role.any()),
-      ...(currentAdminUserId
-        ? [
-            Permission.update(Role.user(currentAdminUserId)),
-            Permission.delete(Role.user(currentAdminUserId)),
-          ]
-        : []),
-    ];
+    // - Allow current admin to read, update and delete
+    // - Restrict to authenticated users only (no Role.any())
+    const permissions = currentAdminUserId
+      ? [
+          Permission.read(Role.user(currentAdminUserId)),
+          Permission.update(Role.user(currentAdminUserId)),
+          Permission.delete(Role.user(currentAdminUserId)),
+        ]
+      : [];
 
     const response = await this.databases.createDocument(
       this.databaseId,
