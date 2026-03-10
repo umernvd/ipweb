@@ -17,6 +17,10 @@ export class InterviewService {
     return this.repository.getInterviewById(id);
   }
 
+  async create(data: Partial<Interview>): Promise<Interview> {
+    return this.repository.createInterview(data);
+  }
+
   async getDetailedInterviews(
     companyId: string,
     filters?: InterviewQueryFilters,

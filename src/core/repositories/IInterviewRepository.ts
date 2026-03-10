@@ -17,6 +17,7 @@ export interface IInterviewRepository {
   ): Promise<PaginatedResult<HydratedInterview>>;
   getInterviews(companyId: string): Promise<Interview[]>;
   getInterviewById(id: string): Promise<Interview | null>;
+  createInterview(data: Partial<Interview>): Promise<Interview>;
   updateInterview(id: string, data: Partial<Interview>): Promise<Interview>;
   deleteInterview(id: string): Promise<void>;
   getGlobalInterviewCount(): Promise<number>;

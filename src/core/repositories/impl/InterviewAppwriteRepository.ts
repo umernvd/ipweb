@@ -72,6 +72,20 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
     }
   }
 
+  async createInterview(data: Partial<Interview>): Promise<Interview> {
+    const doc = await this.databases.createDocument(
+      this.databaseId,
+      this.collectionId,
+      "unique()",
+      {
+        ...data,
+        $createdAt: new Date().toISOString(),
+        $updatedAt: new Date().toISOString(),
+      },
+    );
+    return this.toDomain(doc);
+  }
+
   async updateInterview(
     id: string,
     data: Partial<Interview>,

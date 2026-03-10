@@ -1,5 +1,6 @@
 import { ChangePasswordForm } from "@/modules/settings/components/ChangePasswordForm";
 import { UpdateEmailForm } from "@/modules/settings/components/UpdateEmailForm";
+import { GoogleDriveConnect } from "@/modules/settings/components/GoogleDriveConnect";
 
 export const metadata = {
   title: "Settings | HireAI Admin",
@@ -22,6 +23,7 @@ export default function SettingsPage() {
       {/* Forms */}
       <ChangePasswordForm />
       <UpdateEmailForm />
+      <GoogleDriveConnect />
 
       <div className="rounded-xl border border-red-200 bg-red-50/30 overflow-hidden mt-4">
         <div className="px-6 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
