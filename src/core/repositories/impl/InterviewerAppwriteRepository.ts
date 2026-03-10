@@ -1,7 +1,6 @@
 import { Databases, ID, Query, Permission, Role, Models } from "appwrite";
 import { IInterviewerRepository } from "../IInterviewerRepository";
 import { Interviewer } from "../../entities/types";
-import { useAuthStore } from "@/stores/authStore";
 
 // Lightweight validation helper
 const validateInterviewerInput = (data: {
@@ -93,21 +92,12 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
     // Validate input before proceeding
     validateInterviewerInput(data);
 
-    // Get current user ID from auth store for permission assignment
-    const { user } = useAuthStore.getState();
-    const currentAdminUserId = user?.$id;
-
-    // Build permissions array
-    // - Allow any unauthenticated user to read (for mobile login phase)
-    // - Allow current admin to update and delete
+    // Build team-based permissions for tenant isolation
     const permissions = [
-      Permission.read(Role.any()),
-      ...(currentAdminUserId
-        ? [
-            Permission.update(Role.user(currentAdminUserId)),
-            Permission.delete(Role.user(currentAdminUserId)),
-          ]
-        : []),
+      Permission.read(Role.team(data.companyId)),
+      Permission.write(Role.team(data.companyId)),
+      Permission.update(Role.team(data.companyId)),
+      Permission.delete(Role.team(data.companyId)),
     ];
 
     const response = await this.databases.createDocument(

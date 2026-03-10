@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
-import { Client, Databases } from "node-appwrite";
+import {
+  Client,
+  Databases,
+  Permission,
+  Role as AppwriteRole,
+} from "node-appwrite";
 import { getOrCreateFolder, uploadFileToDrive } from "@/lib/googleDriveUtils";
 
 const INTERVIEW_PRO_ROOT_FOLDER = "InterviewPro";
@@ -133,6 +138,12 @@ export async function POST(request: NextRequest) {
       "interviews",
       "unique()",
       interviewData,
+      [
+        Permission.read(AppwriteRole.team(companyId)),
+        Permission.write(AppwriteRole.team(companyId)),
+        Permission.update(AppwriteRole.team(companyId)),
+        Permission.delete(AppwriteRole.team(companyId)),
+      ],
     );
 
     return NextResponse.json(

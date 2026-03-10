@@ -1,10 +1,10 @@
-import { Client, Databases, Query, Models } from "appwrite";
+import { Client, Databases, Query, Models, Permission, Role } from "appwrite";
 import { IInterviewRepository } from "../IInterviewRepository";
 import { Interview } from "@/core/entities/interview";
 import {
   HydratedInterview,
   Candidate,
-  Role,
+  Role as RoleEntity,
   Interviewer,
   PaginatedResult,
 } from "@/core/entities/types";
@@ -82,6 +82,12 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
         $createdAt: new Date().toISOString(),
         $updatedAt: new Date().toISOString(),
       },
+      [
+        Permission.read(Role.team(data.companyId!)),
+        Permission.write(Role.team(data.companyId!)),
+        Permission.update(Role.team(data.companyId!)),
+        Permission.delete(Role.team(data.companyId!)),
+      ],
     );
     return this.toDomain(doc);
   }
@@ -173,7 +179,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       ];
 
       let candidates: Candidate[] = [];
-      let roles: Role[] = [];
+      let roleEntities: RoleEntity[] = [];
       let interviewers: Interviewer[] = [];
 
       // 4. Batch fetch related data
@@ -206,12 +212,12 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
               Query.limit(roleIds.length),
             ])
             .then((res) => {
-              roles = res.documents.map((doc) => ({
+              roleEntities = res.documents.map((doc) => ({
                 $id: doc.$id,
                 name: (doc as any).name || "",
                 title: (doc as any).title || "",
                 level: (doc as any).level || "",
-              })) as Role[];
+              })) as RoleEntity[];
             }),
         );
       }
@@ -244,7 +250,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
         const candidate = candidates.find(
           (c) => c.$id === interview.candidateId,
         );
-        const role = roles.find((r) => r.$id === interview.roleId);
+        const roleEntity = roleEntities.find((r) => r.$id === interview.roleId);
         const interviewer = interviewers.find(
           (i) => i.$id === interview.interviewerId,
         );
@@ -262,8 +268,8 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
           },
           role: {
             $id: interview.roleId || "unknown",
-            title: role?.title || "Unspecified Role",
-            level: role?.level || "N/A",
+            title: roleEntity?.title || "Unspecified Role",
+            level: roleEntity?.level || "N/A",
           },
           interviewer: {
             $id: interview.interviewerId || "unknown",

@@ -1,4 +1,4 @@
-import { Databases, ID, Query, Models } from "appwrite";
+import { Databases, ID, Query, Models, Permission, Role } from "appwrite";
 import { IQuestionRepository } from "../IQuestionRepository";
 import { Question } from "../../entities/question";
 
@@ -48,6 +48,12 @@ export class QuestionAppwriteRepository implements IQuestionRepository {
       "questions",
       ID.unique(),
       data,
+      [
+        Permission.read(Role.team(data.companyId)),
+        Permission.write(Role.team(data.companyId)),
+        Permission.update(Role.team(data.companyId)),
+        Permission.delete(Role.team(data.companyId)),
+      ],
     );
     return this.toDomain(response);
   }

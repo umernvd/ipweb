@@ -1,4 +1,4 @@
-import { Databases, Query, ID, Models } from "appwrite";
+import { Databases, Query, ID, Models, Permission, Role } from "appwrite";
 import { Candidate } from "@/core/entities/candidate";
 import { ICandidateRepository } from "../ICandidateRepository";
 
@@ -22,6 +22,12 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
       "candidates",
       ID.unique(),
       data,
+      [
+        Permission.read(Role.team(data.companyId)),
+        Permission.write(Role.team(data.companyId)),
+        Permission.update(Role.team(data.companyId)),
+        Permission.delete(Role.team(data.companyId)),
+      ],
     );
     return this.toDomain(doc);
   }

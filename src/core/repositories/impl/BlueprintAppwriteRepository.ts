@@ -1,4 +1,4 @@
-import { Databases, Query, ID, Models } from "appwrite";
+import { Databases, Query, ID, Models, Permission, Role } from "appwrite";
 import { IBlueprintRepository } from "../IBlueprintRepository";
 import { Blueprint } from "@/core/entities/blueprint";
 
@@ -35,6 +35,12 @@ export class BlueprintAppwriteRepository implements IBlueprintRepository {
         ...blueprint,
         structure: JSON.stringify(blueprint.structure),
       },
+      [
+        Permission.read(Role.team(blueprint.companyId)),
+        Permission.write(Role.team(blueprint.companyId)),
+        Permission.update(Role.team(blueprint.companyId)),
+        Permission.delete(Role.team(blueprint.companyId)),
+      ],
     );
     return this.toDomain(doc);
   }
