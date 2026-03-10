@@ -25,9 +25,7 @@ export const useLevelStore = create<LevelStore>()(
       fetchLevels: async (companyId, roleId) => {
         set({ isLoading: true, error: null });
         try {
-          const levels = roleId
-            ? await DI.levelService.getLevels(companyId, roleId)
-            : [];
+          const levels = await DI.levelService.getLevels(companyId, roleId);
           set({ levels, isLoading: false });
         } catch (err) {
           const errorMessage =

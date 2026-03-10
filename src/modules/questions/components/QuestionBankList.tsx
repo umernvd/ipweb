@@ -5,7 +5,15 @@ import { useRoles } from "@/modules/roles/hooks/useRoles";
 import { useQuestions } from "@/modules/questions/hooks/useQuestions";
 import { useLevels } from "@/modules/levels/hooks/useLevels";
 import { AddQuestionModal } from "./AddQuestionModal";
-import { Search, Plus, Pencil, Trash2, ChevronDown } from "lucide-react";
+import { BulkQuestionUpload } from "./BulkQuestionUpload";
+import {
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronDown,
+  Upload,
+} from "lucide-react";
 
 const getDifficultyStyles = (difficulty: string) => {
   switch (difficulty) {
@@ -32,6 +40,7 @@ export const QuestionBankList = () => {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Filter questions based on all active filters
   const filteredQuestions = questions.filter((q) => {
@@ -78,13 +87,22 @@ export const QuestionBankList = () => {
             Manage and organize interview questions for candidate assessments.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-lg shadow-sm transition-all text-sm font-medium"
-        >
-          <Plus size={18} />
-          Add Question
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsBulkUploadOpen(true)}
+            className="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition-all text-sm font-medium"
+          >
+            <Upload size={18} />
+            Bulk Import
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-lg shadow-sm transition-all text-sm font-medium"
+          >
+            <Plus size={18} />
+            Add Question
+          </button>
+        </div>
       </div>
 
       {/* Clean, un-boxed filter row */}
@@ -288,6 +306,16 @@ export const QuestionBankList = () => {
       {isAddModalOpen && (
         <AddQuestionModal onClose={() => setIsAddModalOpen(false)} />
       )}
+
+      {/* Bulk Upload Modal */}
+      <BulkQuestionUpload
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => {
+          // Refresh questions list after successful upload
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };

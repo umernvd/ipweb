@@ -24,7 +24,7 @@ export class RoleService {
 export class LevelService {
   constructor(private repo: ILevelRepository) {}
 
-  async getLevels(companyId: string, roleId: string): Promise<Level[]> {
+  async getLevels(companyId: string, roleId?: string): Promise<Level[]> {
     return this.repo.list(companyId, roleId);
   }
 

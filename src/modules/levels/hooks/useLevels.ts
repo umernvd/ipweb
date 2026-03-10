@@ -11,7 +11,7 @@ export const useLevels = (roleId?: string) => {
 
   // --- READ ---
   useEffect(() => {
-    if (companyId && roleId) {
+    if (companyId) {
       fetchLevels(companyId, roleId);
     }
   }, [companyId, roleId, fetchLevels]);
