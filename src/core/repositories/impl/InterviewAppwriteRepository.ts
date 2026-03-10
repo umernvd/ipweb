@@ -19,31 +19,29 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
     this.databaseId = databaseId;
   }
 
-  // We cast 'doc' to 'any' to read custom attributes
+  // We map 'doc' to Interview using typed property access
   private toDomain(doc: Models.Document): Interview {
-    const data = doc as any; // Allow accessing custom fields
-
     return {
       $id: doc.$id,
-      candidateId: data.candidateId,
-      interviewerId: data.interviewerId,
-      companyId: data.companyId,
-      roleId: data.roleId || null,
+      candidateId: (doc as any).candidateId,
+      interviewerId: (doc as any).interviewerId,
+      companyId: (doc as any).companyId,
+      roleId: (doc as any).roleId || null,
 
-      driveFileUrl: data.driveFileUrl || null,
-      driveFolderId: data.driveFolderId || null,
-      driveFileId: data.driveFileId || null,
+      driveFileUrl: (doc as any).driveFileUrl || null,
+      driveFolderId: (doc as any).driveFolderId || null,
+      driveFileId: (doc as any).driveFileId || null,
 
-      aiSummary: data.aiSummary || null,
-      score: data.score || 0,
+      aiSummary: (doc as any).aiSummary || null,
+      score: (doc as any).score || 0,
       // Default to 'pending' if missing or invalid
       status: ["pending", "started", "completed", "reviewed"].includes(
-        data.status,
+        (doc as any).status,
       )
-        ? data.status
+        ? (doc as any).status
         : "pending",
 
-      startedAt: data.startedAt || null,
+      startedAt: (doc as any).startedAt || null,
     };
   }
 
@@ -175,7 +173,13 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
               Query.limit(candidateIds.length),
             ])
             .then((res) => {
-              candidates = res.documents as unknown as Candidate[];
+              candidates = res.documents.map((doc) => ({
+                $id: doc.$id,
+                name: (doc as any).name || "",
+                email: (doc as any).email || "",
+                phone: (doc as any).phone || null,
+                driveFolderId: (doc as any).driveFolderId || null,
+              })) as Candidate[];
             }),
         );
       }
@@ -188,7 +192,12 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
               Query.limit(roleIds.length),
             ])
             .then((res) => {
-              roles = res.documents as unknown as Role[];
+              roles = res.documents.map((doc) => ({
+                $id: doc.$id,
+                name: (doc as any).name || "",
+                title: (doc as any).title || "",
+                level: (doc as any).level || "",
+              })) as Role[];
             }),
         );
       }
@@ -201,7 +210,15 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
               Query.limit(interviewerIds.length),
             ])
             .then((res) => {
-              interviewers = res.documents as unknown as Interviewer[];
+              interviewers = res.documents.map((doc) => ({
+                $id: doc.$id,
+                name: (doc as any).name || "",
+                email: (doc as any).email || "",
+                status: (doc as any).status || "",
+                companyId: (doc as any).companyId || "",
+                $createdAt: doc.$createdAt || "",
+                $updatedAt: doc.$updatedAt || "",
+              })) as Interviewer[];
             }),
         );
       }

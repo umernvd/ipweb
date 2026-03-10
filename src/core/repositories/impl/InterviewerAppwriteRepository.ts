@@ -1,4 +1,4 @@
-import { Databases, ID, Query, Permission, Role } from "appwrite";
+import { Databases, ID, Query, Permission, Role, Models } from "appwrite";
 import { IInterviewerRepository } from "../IInterviewerRepository";
 import { Interviewer } from "../../entities/types";
 import { useAuthStore } from "@/stores/authStore";
@@ -69,7 +69,19 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
       "interviewers",
       [Query.equal("companyId", companyId)],
     );
-    return response.documents as unknown as Interviewer[];
+    return response.documents.map((doc) => this.toDomain(doc));
+  }
+
+  private toDomain(doc: Models.Document): Interviewer {
+    return {
+      $id: doc.$id,
+      companyId: (doc as any).companyId,
+      name: (doc as any).name,
+      email: (doc as any).email,
+      status: (doc as any).status,
+      $createdAt: doc.$createdAt,
+      $updatedAt: doc.$updatedAt,
+    };
   }
 
   async createInterviewer(data: {
@@ -105,7 +117,7 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
       data,
       permissions,
     );
-    return response as unknown as Interviewer;
+    return this.toDomain(response);
   }
 
   async updateInterviewer(
@@ -118,7 +130,7 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
       id,
       data,
     );
-    return response as unknown as Interviewer;
+    return this.toDomain(response);
   }
 
   async deleteInterviewer(id: string): Promise<void> {

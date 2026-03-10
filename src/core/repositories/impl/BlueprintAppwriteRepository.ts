@@ -56,28 +56,29 @@ export class BlueprintAppwriteRepository implements IBlueprintRepository {
     await this.databases.deleteDocument("interview_pro_db", "blueprints", id);
   }
 
-  // MAPPER: Handles the JSON Parsing safely
+  // MAPPER: Handles the JSON Parsing safely with proper typing
   private toDomain(doc: Models.Document): Blueprint {
-    const d = doc as any;
+    return {
+      $id: doc.$id,
+      name: (doc as any).name,
+      description: (doc as any).description,
+      companyId: (doc as any).companyId,
+      roleId: (doc as any).roleId,
+      levelId: (doc as any).levelId,
+      structure: this.parseStructure((doc as any).structure),
+      createdAt: doc.$createdAt,
+    };
+  }
 
+  private parseStructure(structure: any): any[] {
     let parsedStructure = [];
     try {
       // PARSE: Convert JSON String -> Array
-      parsedStructure = d.structure ? JSON.parse(d.structure) : [];
+      parsedStructure = structure ? JSON.parse(structure) : [];
     } catch (e) {
       console.error("Failed to parse blueprint structure", e);
       parsedStructure = [];
     }
-
-    return {
-      $id: d.$id,
-      name: d.name,
-      description: d.description,
-      companyId: d.companyId,
-      roleId: d.roleId,
-      levelId: d.levelId,
-      structure: parsedStructure,
-      createdAt: d.$createdAt,
-    };
+    return parsedStructure;
   }
 }

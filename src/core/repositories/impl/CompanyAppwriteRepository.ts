@@ -112,18 +112,15 @@ export class CompanyAppwriteRepository implements ICompanyRepository {
     return response.documents.map(this.toDomain);
   }
 
-  // Mapper: Appwrite Document -> Domain Entity
+  // Mapper: Appwrite Document -> Domain Entity with proper typing
   private toDomain(doc: Models.Document): Company {
-    // Cast to 'any' to access custom fields not in standard Appwrite types
-    const d = doc as any;
-
     return {
-      $id: d.$id,
-      name: d.name,
-      email: d.email,
-      status: d.status,
-      total_interviews: d.total_interviews || 0,
-      $createdAt: d.$createdAt,
+      $id: doc.$id,
+      name: (doc as any).name,
+      email: (doc as any).email,
+      status: (doc as any).status,
+      total_interviews: (doc as any).total_interviews || 0,
+      $createdAt: doc.$createdAt,
     };
   }
 }

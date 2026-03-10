@@ -1,4 +1,4 @@
-import { Databases, ID, Query } from "appwrite";
+import { Databases, ID, Query, Models } from "appwrite";
 import { IQuestionRepository } from "../IQuestionRepository";
 import { Question } from "../../entities/question";
 
@@ -8,18 +8,18 @@ export class QuestionAppwriteRepository implements IQuestionRepository {
     private readonly databaseId: string,
   ) {}
 
-  private toDomain(doc: any): Question {
+  private toDomain(doc: Models.Document): Question {
     return {
       $id: doc.$id,
-      question: doc.question,
-      roleId: doc.roleId,
-      experienceLevelId: doc.experienceLevelId,
-      category: doc.category,
-      difficulty: doc.difficulty,
-      companyId: doc.companyId,
-      isActive: doc.isActive,
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
+      question: (doc as any).question,
+      roleId: (doc as any).roleId,
+      experienceLevelId: (doc as any).experienceLevelId,
+      category: (doc as any).category,
+      difficulty: (doc as any).difficulty,
+      companyId: (doc as any).companyId,
+      isActive: (doc as any).isActive,
+      createdAt: (doc as any).createdAt,
+      updatedAt: (doc as any).updatedAt,
     };
   }
 
@@ -32,7 +32,17 @@ export class QuestionAppwriteRepository implements IQuestionRepository {
     return response.documents.map((doc) => this.toDomain(doc));
   }
 
-  async createQuestion(data: any): Promise<Question> {
+  async createQuestion(data: {
+    companyId: string;
+    question: string;
+    roleId: string;
+    experienceLevelId: string;
+    category: string;
+    difficulty: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }): Promise<Question> {
     const response = await this.databases.createDocument(
       this.databaseId,
       "questions",

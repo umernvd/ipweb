@@ -27,19 +27,18 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
   }
 
   private toDomain(doc: Models.Document): Candidate {
-    const d = doc as any;
     return {
-      $id: d.$id,
-      name: d.name || "",
-      email: d.email || "",
-      interviewerId: d.interviewerId || "",
-      companyId: d.companyId || "",
-      phone: d.phone || null,
-      cvFileUrl: d.cvFileUrl || null,
-      cvFileId: d.cvFileId || null,
-      driveFolderId: d.driveFolderId || null,
-      createdAt: d.$createdAt,
-      updatedAt: d.$updatedAt,
+      $id: doc.$id,
+      name: (doc as any).name || "",
+      email: (doc as any).email || "",
+      interviewerId: (doc as any).interviewerId || "",
+      companyId: (doc as any).companyId || "",
+      phone: (doc as any).phone || null,
+      cvFileUrl: (doc as any).cvFileUrl || null,
+      cvFileId: (doc as any).cvFileId || null,
+      driveFolderId: (doc as any).driveFolderId || null,
+      createdAt: doc.$createdAt,
+      updatedAt: doc.$updatedAt,
     };
   }
 }

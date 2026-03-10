@@ -30,14 +30,13 @@ export class RoleAppwriteRepository implements IRoleRepository {
   }
 
   private toDomain(doc: Models.Document): Role {
-    const d = doc as any;
     return {
-      $id: d.$id,
-      name: d.name,
-      description: d.description,
-      icon: d.icon,
-      isActive: d.isActive,
-      companyId: d.companyId,
+      $id: doc.$id,
+      name: (doc as any).name,
+      description: (doc as any).description,
+      icon: (doc as any).icon,
+      isActive: (doc as any).isActive,
+      companyId: (doc as any).companyId,
     };
   }
 }
@@ -80,15 +79,14 @@ export class LevelAppwriteRepository implements ILevelRepository {
   }
 
   private toDomain(doc: Models.Document): Level {
-    const d = doc as any;
     return {
-      $id: d.$id,
-      title: d.title,
-      description: d.description,
-      roleId: d.roleId,
-      companyId: d.companyId,
-      sortOrder: d.sortOrder,
-      isActive: d.isActive,
+      $id: doc.$id,
+      title: (doc as any).title,
+      description: (doc as any).description,
+      roleId: (doc as any).roleId,
+      companyId: (doc as any).companyId,
+      sortOrder: (doc as any).sortOrder,
+      isActive: (doc as any).isActive,
     };
   }
 }
