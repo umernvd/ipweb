@@ -12,6 +12,8 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Copy,
+  Check,
 } from "lucide-react";
 
 // Define the shape of interviewer detail data
@@ -79,6 +81,7 @@ export const InterviewersTable = () => {
   const [selectedInterviewer, setSelectedInterviewer] =
     useState<InterviewerDetail | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [copiedAuthCode, setCopiedAuthCode] = useState<string | null>(null);
 
   // Mock function to transform table row data into detailed drawer data
   // In the real app, this would fetch from Appwrite based on ID
@@ -111,6 +114,18 @@ export const InterviewersTable = () => {
       )
     ) {
       await deleteInterviewer(id);
+    }
+  };
+
+  // Copy auth code to clipboard
+  const handleCopyAuthCode = async (e: React.MouseEvent, authCode: string) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(authCode);
+      setCopiedAuthCode(authCode);
+      setTimeout(() => setCopiedAuthCode(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy auth code:", err);
     }
   };
 
@@ -176,16 +191,19 @@ export const InterviewersTable = () => {
               <thead>
                 {/* Human-designed modern header: light gray, crisp uppercase text */}
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[30%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[25%]">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[30%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[25%]">
                     Email
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
+                    Auth Code
                   </th>
                   <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[10%]">
                     Added
                   </th>
                   <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[10%] text-right">
@@ -251,6 +269,28 @@ export const InterviewersTable = () => {
                       </td>
                       <td className="px-6 py-3.5 text-slate-500">
                         {interviewer.email}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <code className="px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded font-mono text-sm font-semibold">
+                            {interviewer.authCode || "—"}
+                          </code>
+                          {interviewer.authCode && (
+                            <button
+                              onClick={(e) =>
+                                handleCopyAuthCode(e, interviewer.authCode!)
+                              }
+                              className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
+                              title="Copy auth code"
+                            >
+                              {copiedAuthCode === interviewer.authCode ? (
+                                <Check size={16} className="text-emerald-600" />
+                              ) : (
+                                <Copy size={16} />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-3.5">
                         {/* Modern solid/subtle badges */}

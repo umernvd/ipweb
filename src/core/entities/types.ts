@@ -18,6 +18,7 @@ export interface Interviewer {
   email: string;
   status: string;
   companyId: string;
+  authCode?: string;
   $createdAt: string;
   $updatedAt: string;
 }
