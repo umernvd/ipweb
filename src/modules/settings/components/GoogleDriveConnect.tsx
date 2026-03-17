@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { DI } from "@/core/di/container";
 import {
   HardDrive,
   CheckCircle,
@@ -29,12 +30,17 @@ export const GoogleDriveConnect = () => {
 
       try {
         setIsLoading(true);
+
+        // Generate JWT for authentication
+        const { jwt } = await DI.authService.createJWT();
+
         const response = await fetch(
-          `/api/auth/google/status?companyId=${companyId}`,
+          `/api/auth/google/status?companyId=${companyId}&jwt=${jwt}`,
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch status");
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch status");
         }
 
         const data = await response.json();
@@ -42,7 +48,11 @@ export const GoogleDriveConnect = () => {
         setError(null);
       } catch (err) {
         console.error("Failed to check Drive connection status:", err);
-        setError("Failed to check connection status");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to check connection status",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -52,7 +62,7 @@ export const GoogleDriveConnect = () => {
 
     // Check for callback messages in URL
     const params = new URLSearchParams(window.location.search);
-    if (params.get("success") === "google_drive_connected") {
+    if (params.get("success") === "google_connected") {
       setSuccess("Google Drive connected successfully!");
       setIsConnected(true);
       // Clear success message after 3 seconds
@@ -63,7 +73,27 @@ export const GoogleDriveConnect = () => {
     }
     if (params.get("error")) {
       const errorMsg = params.get("error");
-      setError(`Connection failed: ${errorMsg}`);
+      let friendlyError = "Connection failed";
+
+      // Map error codes to user-friendly messages
+      switch (errorMsg) {
+        case "google_access_denied":
+          friendlyError = "Google access was denied";
+          break;
+        case "csrf_validation_failed":
+          friendlyError = "Security validation failed. Please try again";
+          break;
+        case "callback_failed":
+          friendlyError = "Connection process failed";
+          break;
+        case "no_refresh_token":
+          friendlyError = "Google did not provide required permissions";
+          break;
+        default:
+          friendlyError = `Connection failed: ${errorMsg}`;
+      }
+
+      setError(friendlyError);
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -79,11 +109,34 @@ export const GoogleDriveConnect = () => {
     setError(null);
 
     try {
-      // Redirect to Google OAuth login
-      window.location.href = `/api/auth/google/login?companyId=${companyId}`;
+      // Generate JWT for authentication
+      const { jwt } = await DI.authService.createJWT();
+
+      // Make POST request to secured login endpoint
+      const response = await fetch("/api/auth/google/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ companyId, jwt }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to initiate OAuth");
+      }
+
+      const data = await response.json();
+
+      // Client-side redirect to Google OAuth
+      window.location.assign(data.url);
     } catch (err) {
       setIsConnecting(false);
-      setError("Failed to initiate Google Drive connection");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to initiate Google Drive connection",
+      );
       console.error("Error connecting to Google Drive:", err);
     }
   };
@@ -98,16 +151,20 @@ export const GoogleDriveConnect = () => {
     setError(null);
 
     try {
+      // Generate JWT for authentication
+      const { jwt } = await DI.authService.createJWT();
+
       const response = await fetch("/api/auth/google/disconnect", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ companyId }),
+        body: JSON.stringify({ companyId, jwt }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to disconnect");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to disconnect");
       }
 
       setIsConnected(false);
@@ -116,7 +173,11 @@ export const GoogleDriveConnect = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error disconnecting from Google Drive:", err);
-      setError("Failed to disconnect Google Drive");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to disconnect Google Drive",
+      );
     } finally {
       setIsDisconnecting(false);
     }

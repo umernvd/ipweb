@@ -5,6 +5,7 @@ import {
   Databases,
   Permission,
   Role as AppwriteRole,
+  ID,
 } from "node-appwrite";
 import { getOrCreateFolder, uploadFileToDrive } from "@/lib/googleDriveUtils";
 
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
     const interviewDoc = await databases.createDocument(
       "interview_pro_db",
       "interviews",
-      "unique()",
+      ID.unique(),
       interviewData,
       [
         Permission.read(AppwriteRole.team(companyId)),

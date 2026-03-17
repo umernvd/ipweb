@@ -41,41 +41,27 @@ export class AppwriteTeamsService {
     }
   }
 
-  /**
-   * Add an interviewer to a company team
-   * @param companyId The company ID (team ID)
-   * @param email The interviewer's email
-   * @param name The interviewer's name
-   * @returns Membership ID
-   */
   async addInterviewerToTeam(
     companyId: string,
     email: string,
+    userId: string,
     name: string,
-  ): Promise<string> {
+  ) {
     try {
+      // EXACT positional arguments for Appwrite Node SDK
       const membership = await this.teams.createMembership(
-        companyId,
-        [email],
-        undefined,
-        undefined,
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/team-join`,
-        name,
+        companyId, // 1. teamId
+        ["interviewer"], // 2. roles
+        email, // 3. email (MUST be the email string)
+        userId, // 4. userId
+        undefined, // 5. phone (leave undefined)
+        "http://localhost/login", // 6. url (Hardcoded trusted URL)
+        name, // 7. name
       );
-      console.log(`Added interviewer ${email} to team ${companyId}`);
-      return membership.$id;
-    } catch (error: any) {
-      // If membership already exists, that's fine - just log and continue
-      if (error?.code === 409 || error?.message?.includes("already exists")) {
-        console.log(`Interviewer ${email} already in team ${companyId}`);
-        return "";
-      }
-      // Log but don't throw - team membership is not critical for operation
-      console.error(
-        `Error adding interviewer ${email} to team ${companyId}:`,
-        error,
-      );
-      return "";
+      return membership;
+    } catch (error) {
+      console.error("Team invite failed:", error);
+      throw error;
     }
   }
 }

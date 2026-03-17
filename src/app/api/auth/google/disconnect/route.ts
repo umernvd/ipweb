@@ -3,15 +3,16 @@ import { Client, Databases } from "node-appwrite";
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
-    const body = await request.json();
-    const companyId = body.companyId;
+    const { companyId, jwt } = await request.json();
 
-    if (!companyId) {
-      return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
+    if (!companyId || !jwt) {
+      return NextResponse.json(
+        { error: "Missing companyId or jwt" },
+        { status: 400 },
+      );
     }
 
-    // Initialize Appwrite server SDK
+    // Initialize Appwrite Admin SDK
     const appwriteClient = new Client()
       .setEndpoint("https://cloud.appwrite.io/v1")
       .setProject("interviewpro")
@@ -19,14 +20,15 @@ export async function POST(request: NextRequest) {
 
     const databases = new Databases(appwriteClient);
 
-    // Update company document to remove Google Drive connection
+    // Clear the Google Drive connection data from the company document
     await databases.updateDocument("interview_pro_db", "companies", companyId, {
-      driveRefreshToken: null,
+      googleRefreshToken: null,
+      rootDriveFolderId: null,
       driveConnectedAt: null,
     });
 
     return NextResponse.json(
-      { success: true, message: "Google Drive disconnected successfully" },
+      { message: "Google Drive disconnected successfully" },
       { status: 200 },
     );
   } catch (error) {

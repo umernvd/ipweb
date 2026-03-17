@@ -8,7 +8,6 @@ import {
   Users,
   Briefcase,
   Library,
-  FileText,
   Video,
   Settings,
   UserCircle,
@@ -23,7 +22,6 @@ const navItems = [
   { name: "Interviewers", href: "/company/interviewers", icon: Users },
   { name: "Roles & Levels", href: "/company/hiring-roles", icon: Briefcase },
   { name: "Question Bank", href: "/company/questions", icon: Library },
-  { name: "Blueprints", href: "/company/blueprints", icon: FileText },
   { name: "Interviews", href: "/company/interviews", icon: Video },
 ];
 

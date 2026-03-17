@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { HydratedInterview } from "@/core/entities/types";
 
 interface InterviewState {
@@ -24,39 +23,28 @@ interface InterviewState {
   clearError: () => void;
 }
 
-export const useInterviewStore = create<InterviewState>()(
-  persist(
-    (set) => ({
-      interviews: [],
-      totalCount: 0,
-      isLoading: false,
-      currentPage: 1,
-      itemsPerPage: 10,
-      searchQuery: "",
-      statusFilter: "",
-      error: null,
+export const useInterviewStore = create<InterviewState>()((set) => ({
+  interviews: [],
+  totalCount: 0,
+  isLoading: false,
+  currentPage: 1,
+  itemsPerPage: 10,
+  searchQuery: "",
+  statusFilter: "",
+  error: null,
 
-      setInterviews: (data) =>
-        set({
-          interviews: data.documents,
-          totalCount: data.total,
-          error: null,
-        }),
+  setInterviews: (data) =>
+    set({ interviews: data.documents, totalCount: data.total, error: null }),
 
-      setPage: (currentPage) => set({ currentPage }),
+  setPage: (currentPage) => set({ currentPage }),
 
-      setSearchQuery: (searchQuery) => set({ searchQuery, currentPage: 1 }),
+  setSearchQuery: (searchQuery) => set({ searchQuery, currentPage: 1 }),
 
-      setStatusFilter: (statusFilter) => set({ statusFilter, currentPage: 1 }),
+  setStatusFilter: (statusFilter) => set({ statusFilter, currentPage: 1 }),
 
-      setLoading: (isLoading) => set({ isLoading }),
+  setLoading: (isLoading) => set({ isLoading }),
 
-      setError: (error: string) => set({ error }),
+  setError: (error: string) => set({ error }),
 
-      clearError: () => set({ error: null }),
-    }),
-    {
-      name: "interview-storage",
-    },
-  ),
-);
+  clearError: () => set({ error: null }),
+}));

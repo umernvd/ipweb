@@ -8,6 +8,7 @@ export interface InterviewQueryFilters {
   status?: string;
   startDate?: string;
   endDate?: string;
+  cacheBuster?: number;
 }
 
 export interface IInterviewRepository {

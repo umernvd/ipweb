@@ -78,6 +78,8 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
       name: (doc as any).name,
       email: (doc as any).email,
       status: (doc as any).status,
+      userId: (doc as any).userId,
+      authCode: (doc as any).authCode,
       $createdAt: doc.$createdAt,
       $updatedAt: doc.$updatedAt,
     };
@@ -124,6 +126,9 @@ export class InterviewerAppwriteRepository implements IInterviewerRepository {
   }
 
   async deleteInterviewer(id: string): Promise<void> {
+    // Delete the database document
+    // Note: Auth user deletion is handled separately in the API route
+    // to avoid circular dependencies with the server-side Users SDK
     await this.databases.deleteDocument(this.databaseId, "interviewers", id);
   }
 }

@@ -123,18 +123,13 @@ export default function DashboardPage() {
                     key={interview.$id}
                     className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-100"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 text-sm">
-                        {interview.candidate?.name?.charAt(0) || "?"}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-900">
-                          {interview.candidate?.name || "Unknown"}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {interview.role?.title || "No Role"}
-                        </span>
-                      </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-900">
+                        {interview.candidate?.name || "Unknown"}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {interview.role?.title || "No Role"}
+                      </span>
                     </div>
                     <span
                       className={`text-xs font-medium px-2 py-1 rounded 

@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSuperAdminStore } from "@/stores/superAdminStore";
+import {
+  getSuperAdminDashboardData,
+  approveCompanyAdmin,
+  rejectCompanyAdmin,
+  getPendingCompaniesAdmin,
+} from "@/app/actions/adminActions";
 import { DI } from "@/core/di/container";
 
 export const useSuperAdminDashboard = () => {
@@ -22,25 +28,21 @@ export const useSuperAdminDashboard = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // Fetch company stats
-        const companyStats = await DI.companyService.getGlobalStats();
+        // Generate a fresh JWT token using DI AuthService
+        const { jwt } = await DI.authService.createJWT();
 
-        // Fetch interview count
-        const interviewCount =
-          await DI.interviewService.getGlobalInterviewCount();
-
-        // Fetch pending companies
-        const pending = await DI.companyService.getPendingCompanies();
+        // Call Server Action with JWT
+        const data = await getSuperAdminDashboardData(jwt);
 
         // Update store
         setStats({
-          totalCompanies: companyStats.total,
-          activeCompanies: companyStats.active,
-          pendingApprovals: companyStats.pending,
-          totalInterviews: interviewCount,
+          totalCompanies: data.stats.total,
+          activeCompanies: data.stats.active,
+          pendingApprovals: data.stats.pending,
+          totalInterviews: data.totalInterviews,
         });
 
-        setPendingList(pending);
+        setPendingList(data.pendingCompanies);
       } catch (error) {
         console.error("Failed to fetch super admin dashboard data:", error);
       } finally {
@@ -57,13 +59,19 @@ export const useSuperAdminDashboard = () => {
       // Optimistically update the store
       removePendingCompany(companyId);
 
-      // Update in Appwrite
-      await DI.companyService.approveCompany(companyId);
+      // Generate JWT and use Server Action for Super Admin
+      const { jwt } = await DI.authService.createJWT();
+      await approveCompanyAdmin(jwt, companyId);
     } catch (error) {
       console.error("Failed to approve company:", error);
       // On error, refetch to restore correct state
-      const pending = await DI.companyService.getPendingCompanies();
-      setPendingList(pending);
+      try {
+        const { jwt } = await DI.authService.createJWT();
+        const pending = await getPendingCompaniesAdmin(jwt);
+        setPendingList(pending);
+      } catch (refetchError) {
+        console.error("Failed to refetch pending companies:", refetchError);
+      }
     } finally {
       setIsMutating(false);
     }
@@ -75,13 +83,19 @@ export const useSuperAdminDashboard = () => {
       // Optimistically update the store
       removePendingCompany(companyId);
 
-      // Update in Appwrite
-      await DI.companyService.rejectCompany(companyId);
+      // Generate JWT and use Server Action for Super Admin
+      const { jwt } = await DI.authService.createJWT();
+      await rejectCompanyAdmin(jwt, companyId);
     } catch (error) {
       console.error("Failed to reject company:", error);
       // On error, refetch to restore correct state
-      const pending = await DI.companyService.getPendingCompanies();
-      setPendingList(pending);
+      try {
+        const { jwt } = await DI.authService.createJWT();
+        const pending = await getPendingCompaniesAdmin(jwt);
+        setPendingList(pending);
+      } catch (refetchError) {
+        console.error("Failed to refetch pending companies:", refetchError);
+      }
     } finally {
       setIsMutating(false);
     }

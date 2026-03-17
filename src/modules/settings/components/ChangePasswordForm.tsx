@@ -3,20 +3,24 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle } from "lucide-react";
 import {
   changePasswordSchema,
   type ChangePasswordValues,
 } from "@/core/validators/settings.validator";
+import { DI } from "@/core/di/container";
 
 export const ChangePasswordForm = () => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ChangePasswordValues>({
     resolver: zodResolver(changePasswordSchema),
@@ -24,7 +28,6 @@ export const ChangePasswordForm = () => {
 
   const passwordValue = watch("newPassword", "");
 
-  // Password strength calculator
   const calculateStrength = (pass: string) => {
     let score = 0;
     if (!pass) return 0;
@@ -46,8 +49,24 @@ export const ChangePasswordForm = () => {
   ];
 
   const onSubmit = async (data: ChangePasswordValues) => {
-    console.log("Password change requested:", data);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setSuccessMsg(null);
+    setErrorMsg(null);
+    try {
+      await DI.authService.updatePassword(
+        data.newPassword,
+        data.currentPassword,
+      );
+      setSuccessMsg("Password updated successfully.");
+      reset();
+    } catch (err: any) {
+      const msg = err?.message || "Failed to update password.";
+      // Appwrite returns "Invalid credentials" when current password is wrong
+      if (msg.toLowerCase().includes("invalid credentials")) {
+        setErrorMsg("Current password is incorrect.");
+      } else {
+        setErrorMsg(msg);
+      }
+    }
   };
 
   return (
@@ -156,6 +175,18 @@ export const ChangePasswordForm = () => {
             {isSubmitting ? "Saving..." : "Update Password"}
           </button>
         </div>
+
+        {successMsg && (
+          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 max-w-md">
+            <CheckCircle size={16} className="shrink-0" />
+            {successMsg}
+          </div>
+        )}
+        {errorMsg && (
+          <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 max-w-md">
+            {errorMsg}
+          </div>
+        )}
       </form>
     </div>
   );

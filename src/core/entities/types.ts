@@ -18,6 +18,7 @@ export interface Interviewer {
   email: string;
   status: string;
   companyId: string;
+  userId?: string; // Reference to Appwrite Auth user
   authCode?: string;
   $createdAt: string;
   $updatedAt: string;

@@ -1,4 +1,11 @@
-import { Databases, Query, ID, Models } from "appwrite";
+import {
+  Databases,
+  Query,
+  ID,
+  Models,
+  Permission,
+  Role as AppwriteRole,
+} from "appwrite";
 import { IRoleRepository, ILevelRepository } from "../IConfigRepository";
 import { Role, Level } from "@/core/entities/role";
 
@@ -21,6 +28,11 @@ export class RoleAppwriteRepository implements IRoleRepository {
       "roles",
       ID.unique(),
       { ...role, isActive: true, icon: role.icon || "briefcase" },
+      [
+        Permission.read(AppwriteRole.team(role.companyId)),
+        Permission.update(AppwriteRole.team(role.companyId)),
+        Permission.delete(AppwriteRole.team(role.companyId)),
+      ],
     );
     return this.toDomain(doc);
   }
@@ -61,11 +73,33 @@ export class LevelAppwriteRepository implements ILevelRepository {
   }
 
   async create(level: Omit<Level, "$id" | "isActive">): Promise<Level> {
+    // Check for duplicate: prevent creating a level with the same title for the same role
+    const existingLevels = await this.databases.listDocuments(
+      "interview_pro_db",
+      "experience_levels",
+      [
+        Query.equal("roleId", level.roleId),
+        Query.equal("companyId", level.companyId),
+        Query.equal("title", level.title),
+      ],
+    );
+
+    if (existingLevels.total > 0) {
+      throw new Error(
+        `An experience level with title "${level.title}" already exists for this role.`,
+      );
+    }
+
     const doc = await this.databases.createDocument(
       "interview_pro_db",
       "experience_levels",
       ID.unique(),
       { ...level, isActive: true },
+      [
+        Permission.read(AppwriteRole.team(level.companyId)),
+        Permission.update(AppwriteRole.team(level.companyId)),
+        Permission.delete(AppwriteRole.team(level.companyId)),
+      ],
     );
     return this.toDomain(doc);
   }

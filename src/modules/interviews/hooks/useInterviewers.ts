@@ -46,8 +46,9 @@ export const useInterviewers = () => {
     if (!companyId) return;
     setIsMutating(true);
     try {
-      // Call the API route to create interviewer and send email
+      // Call the API route to create interviewer atomically
       // Auth code is generated securely on the backend
+      // The API route handles: Auth user creation + DB document + Team membership
       const response = await fetch("/api/interviewers/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,24 +61,24 @@ export const useInterviewers = () => {
         }),
       });
 
+      // Parse the response
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to create interviewer");
+        // Throw the exact error message from the backend
+        throw new Error(result.error || "Failed to create interviewer");
       }
 
-      // Also create via the service for Zustand store update
-      const newInterviewer = await DI.interviewerService.create({
-        companyId,
-        name,
-        email,
-        status,
-      });
+      // The API route returns the fully created database document
+      // Use it directly as the single source of truth
+      const newInterviewer = result;
 
       // Update Zustand instantly so the table adds a new row
       addInterviewerToStore(newInterviewer);
       return true; // Return success to close the modal
     } catch (err: any) {
       console.error(err);
-      return false;
+      throw err; // Re-throw so the UI can display the exact error
     } finally {
       setIsMutating(false);
     }

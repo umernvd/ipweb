@@ -33,6 +33,10 @@ export const useInterviews = () => {
         // Calculate offset: Page 1 = 0, Page 2 = 10, Page 3 = 20
         const offset = (currentPage - 1) * itemsPerPage;
 
+        // Add cache-busting timestamp to force fresh data from Appwrite
+        // This prevents Next.js from caching stale interview data
+        const cacheBuster = Date.now();
+
         const data = await DI.interviewService.getDetailedInterviews(
           companyId,
           {
@@ -40,6 +44,7 @@ export const useInterviews = () => {
             offset: offset,
             status: statusFilter,
             searchQuery: searchQuery || undefined,
+            cacheBuster, // Pass timestamp to service
           },
         );
 

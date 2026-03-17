@@ -23,7 +23,7 @@ export class InterviewService {
 
   async getDetailedInterviews(
     companyId: string,
-    filters?: InterviewQueryFilters,
+    filters?: InterviewQueryFilters & { cacheBuster?: number },
   ): Promise<PaginatedResult<HydratedInterview>> {
     if (!companyId) return { total: 0, documents: [] };
     return this.repository.getHydratedInterviews(companyId, filters);

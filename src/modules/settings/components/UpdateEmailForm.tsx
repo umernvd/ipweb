@@ -1,24 +1,48 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle } from "lucide-react";
 import {
   updateEmailSchema,
   type UpdateEmailValues,
 } from "@/core/validators/settings.validator";
+import { DI } from "@/core/di/container";
 
 export const UpdateEmailForm = () => {
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<UpdateEmailValues>({
     resolver: zodResolver(updateEmailSchema),
   });
 
   const onSubmit = async (data: UpdateEmailValues) => {
-    console.log("Email update requested:", data);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setSuccessMsg(null);
+    setErrorMsg(null);
+    try {
+      await DI.authService.updateEmail(data.newEmail, data.currentPassword);
+      setSuccessMsg("Email address updated successfully.");
+      reset();
+    } catch (err: any) {
+      const msg = err?.message || "Failed to update email.";
+      if (msg.toLowerCase().includes("invalid credentials")) {
+        setErrorMsg("Current password is incorrect.");
+      } else if (
+        msg.toLowerCase().includes("already exists") ||
+        msg.toLowerCase().includes("conflict")
+      ) {
+        setErrorMsg("This email address is already in use.");
+      } else {
+        setErrorMsg(msg);
+      }
+    }
   };
 
   return (
@@ -77,9 +101,21 @@ export const UpdateEmailForm = () => {
             disabled={isSubmitting}
             className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-70"
           >
-            {isSubmitting ? "Sending Verification..." : "Update Email"}
+            {isSubmitting ? "Updating..." : "Update Email"}
           </button>
         </div>
+
+        {successMsg && (
+          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 max-w-md">
+            <CheckCircle size={16} className="shrink-0" />
+            {successMsg}
+          </div>
+        )}
+        {errorMsg && (
+          <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 max-w-md">
+            {errorMsg}
+          </div>
+        )}
       </form>
     </div>
   );

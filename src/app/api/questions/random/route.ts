@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Client, Databases, Query } from "node-appwrite";
 
+// Force dynamic evaluation on every request - disable all caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Initialize Appwrite server SDK with admin credentials
 const client = new Client()
   .setEndpoint("https://cloud.appwrite.io/v1")
@@ -22,12 +26,21 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export async function GET(request: NextRequest) {
+  console.log("🚀🚀🚀 ENDPOINT HIT: /api/questions/random 🚀🚀🚀");
+  console.log("📍 Full URL:", request.url);
+
   try {
     // Extract query parameters
     const searchParams = request.nextUrl.searchParams;
     const companyId = searchParams.get("companyId");
     const roleId = searchParams.get("roleId");
     const experienceLevelId = searchParams.get("experienceLevelId");
+
+    // Log incoming parameters for debugging
+    console.log("🔍 [Random Questions] Incoming Parameters:");
+    console.log(`   - companyId: ${companyId}`);
+    console.log(`   - roleId: ${roleId}`);
+    console.log(`   - experienceLevelId: ${experienceLevelId}`);
 
     // Validate required parameters
     if (!companyId) {
@@ -38,7 +51,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query filters
-    const queries: string[] = [Query.equal("companyId", companyId)];
+    const queries: string[] = [
+      Query.equal("companyId", companyId),
+      Query.equal("isActive", true), // Only fetch active questions
+    ];
 
     if (roleId) {
       queries.push(Query.equal("roleId", roleId));
@@ -47,6 +63,10 @@ export async function GET(request: NextRequest) {
     if (experienceLevelId) {
       queries.push(Query.equal("experienceLevelId", experienceLevelId));
     }
+
+    console.log(
+      `📋 [Random Questions] Query Filters: ${JSON.stringify(queries)}`,
+    );
 
     // Fetch all matching questions with pagination
     let allQuestions: any[] = [];
@@ -61,10 +81,21 @@ export async function GET(request: NextRequest) {
         Query.offset(offset),
       ];
 
+      console.log(
+        `📄 [Random Questions] Fetching page at offset ${offset} with ${paginationQueries.length} query conditions`,
+      );
+
       const response = await databases.listDocuments(
         databaseId,
         collectionId,
         paginationQueries,
+      );
+
+      console.log(
+        `🔍 DB Returned ${response.documents.length} Qs | Role: ${roleId} | Level: ${experienceLevelId} | Sent Company: ${companyId}`,
+      );
+      console.log(
+        `✅ [Random Questions] Retrieved ${response.documents.length} documents from offset ${offset}`,
       );
 
       allQuestions = allQuestions.concat(response.documents);
@@ -77,8 +108,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    console.log(
+      `🎯 [Random Questions] Total questions found: ${allQuestions.length}`,
+    );
+
     // Return error if no questions found
     if (allQuestions.length === 0) {
+      console.warn(
+        `⚠️ [Random Questions] No questions found for companyId: ${companyId}, roleId: ${roleId}, experienceLevelId: ${experienceLevelId}`,
+      );
       return NextResponse.json(
         { error: "No questions found matching the criteria" },
         { status: 404 },
@@ -91,6 +129,10 @@ export async function GET(request: NextRequest) {
     // Take exactly 10 questions (or fewer if less than 10 available)
     const randomQuestions = shuffledQuestions.slice(0, 10);
 
+    console.log(
+      `🎲 [Random Questions] Returning ${randomQuestions.length} random questions`,
+    );
+
     // Return the random questions
     return NextResponse.json({
       success: true,
@@ -98,7 +140,10 @@ export async function GET(request: NextRequest) {
       questions: randomQuestions,
     });
   } catch (error) {
-    console.error("Error fetching random questions:", error);
+    console.error(
+      "❌ [Random Questions] Error fetching random questions:",
+      error,
+    );
     return NextResponse.json(
       { error: "Failed to fetch random questions" },
       { status: 500 },

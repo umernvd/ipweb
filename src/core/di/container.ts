@@ -1,6 +1,5 @@
 import { Client, Databases } from "appwrite";
 import { CompanyAppwriteRepository } from "@/core/repositories/impl/CompanyAppwriteRepository";
-import { BlueprintAppwriteRepository } from "@/core/repositories/impl/BlueprintAppwriteRepository";
 import {
   RoleAppwriteRepository,
   LevelAppwriteRepository,
@@ -11,7 +10,6 @@ import { InterviewerAppwriteRepository } from "@/core/repositories/impl/Intervie
 import { QuestionAppwriteRepository } from "@/core/repositories/impl/QuestionAppwriteRepository";
 import { CompanyService } from "@/core/services/CompanyService";
 import { RoleService, LevelService } from "@/core/services/ConfigService";
-import { BlueprintService } from "@/core/services/BlueprintService";
 import { CandidateService } from "@/core/services/CandidateService";
 import { AuthService } from "@/core/services/AuthService";
 import { InterviewService } from "@/core/services/InterviewService";
@@ -29,7 +27,6 @@ const databases = new Databases(client);
 const companyRepo = new CompanyAppwriteRepository(databases);
 const roleRepo = new RoleAppwriteRepository(databases);
 const levelRepo = new LevelAppwriteRepository(databases);
-const blueprintRepo = new BlueprintAppwriteRepository(databases);
 const candidateRepo = new CandidateAppwriteRepository(databases);
 const interviewRepo = new InterviewAppwriteRepository(
   client,
@@ -48,7 +45,6 @@ const questionRepo = new QuestionAppwriteRepository(
 const companyService = new CompanyService(companyRepo);
 const roleService = new RoleService(roleRepo);
 const levelService = new LevelService(levelRepo);
-const blueprintService = new BlueprintService(blueprintRepo);
 const candidateService = new CandidateService(candidateRepo);
 const authService = new AuthService();
 const interviewService = new InterviewService(interviewRepo);
@@ -60,7 +56,6 @@ export const DI = {
   companyService,
   roleService,
   levelService,
-  blueprintService,
   candidateService,
   authService,
   interviewService,

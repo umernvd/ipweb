@@ -14,10 +14,10 @@ export class InterviewerService {
     email: string;
     status: string;
   }): Promise<Interviewer> {
-    // Auto-generate a 6-character uppercase auth code using cryptographic randomness
-    // This replaces the weak Math.random() approach with crypto.getRandomValues()
+    // Auto-generate an 8-character uppercase auth code using cryptographic randomness
+    // Meets Appwrite's minimum 8-character password requirement
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const array = new Uint8Array(6);
+    const array = new Uint8Array(8);
     crypto.getRandomValues(array);
     const generatedAuthCode = Array.from(array)
       .map((x) => chars[x % chars.length])

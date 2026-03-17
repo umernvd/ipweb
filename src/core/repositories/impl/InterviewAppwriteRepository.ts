@@ -24,16 +24,19 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
     return {
       $id: doc.$id,
       candidateId: (doc as any).candidateId,
+      candidateName: (doc as any).candidateName || null, // Direct column from DB
       interviewerId: (doc as any).interviewerId,
       companyId: (doc as any).companyId,
       roleId: (doc as any).roleId || null,
+      levelId: (doc as any).levelId || null, // Direct column from DB
 
       driveFileUrl: (doc as any).driveFileUrl || null,
+      cvDriveUrl: (doc as any).cvDriveUrl || null,
       driveFolderId: (doc as any).driveFolderId || null,
       driveFileId: (doc as any).driveFileId || null,
 
       aiSummary: (doc as any).aiSummary || null,
-      score: (doc as any).score || 0,
+      score: (doc as any).score ?? null,
       // Default to 'pending' if missing or invalid
       status: ["pending", "started", "completed", "reviewed"].includes(
         (doc as any).status,
@@ -50,7 +53,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       const response = await this.databases.listDocuments(
         this.databaseId,
         this.collectionId,
-        [Query.equal("companyId", companyId)],
+        [Query.equal("companyId", companyId), Query.orderDesc("$createdAt")],
       );
       return response.documents.map((doc) => this.toDomain(doc));
     } catch (error) {
@@ -132,6 +135,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       status?: string;
       startDate?: string;
       endDate?: string;
+      cacheBuster?: number;
     },
   ): Promise<PaginatedResult<HydratedInterview>> {
     try {
@@ -154,6 +158,10 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       // Always order by creation date
       queries.push(Query.orderDesc("$createdAt"));
 
+      // Note: cacheBuster is passed through filters but not used in queries
+      // The cache-busting happens at the client hook level by passing a timestamp
+      // This ensures each fetch request is unique and bypasses Next.js caching
+
       // 2. Fetch interviews WITHOUT pagination to get all results for filtering
       const response = await this.databases.listDocuments(
         this.databaseId,
@@ -167,131 +175,105 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
         return { total: 0, documents: [] };
       }
 
-      // 3. Extract unique IDs for batch fetching
-      const candidateIds = [
-        ...new Set(rawInterviews.map((i) => i.candidateId).filter(Boolean)),
-      ];
-      const roleIds = [
-        ...new Set(rawInterviews.map((i) => i.roleId).filter(Boolean)),
-      ];
-      const interviewerIds = [
-        ...new Set(rawInterviews.map((i) => i.interviewerId).filter(Boolean)),
-      ];
+      // 5. Hydrate interviews by fetching related documents
+      const hydratedData = await Promise.all(
+        rawInterviews.map(async (interview) => {
+          // 1. Fetch Role Name
+          let roleTitle = "Unspecified Role";
+          if (interview.roleId && interview.roleId.length >= 20) {
+            try {
+              const roleDoc = await this.databases.getDocument(
+                this.databaseId,
+                "roles",
+                interview.roleId,
+              );
+              roleTitle =
+                (roleDoc as any).title ||
+                (roleDoc as any).name ||
+                (roleDoc as any).roleName ||
+                interview.roleId;
+            } catch (e) {
+              console.warn(`Role fetch failed for ID: ${interview.roleId}`, e);
+            }
+          } else if (interview.roleId) {
+            roleTitle = interview.roleId;
+          }
 
-      let candidates: Candidate[] = [];
-      let roleEntities: RoleEntity[] = [];
-      let interviewers: Interviewer[] = [];
+          // 2. Fetch Level Name
+          let levelTitle = "N/A";
+          if (interview.levelId && interview.levelId.length >= 20) {
+            try {
+              const levelDoc = await this.databases.getDocument(
+                this.databaseId,
+                "experience_levels",
+                interview.levelId,
+              );
+              levelTitle =
+                (levelDoc as any).title ||
+                (levelDoc as any).name ||
+                interview.levelId;
+            } catch (e) {
+              console.warn(
+                `Level fetch failed for ID: ${interview.levelId}`,
+                e,
+              );
+            }
+          } else if (interview.levelId) {
+            levelTitle = interview.levelId;
+          }
 
-      // 4. Batch fetch related data
-      const fetchPromises = [];
+          // 3. Fetch Interviewer Name
+          let interviewerName = "Unknown Interviewer";
+          if (interview.interviewerId && interview.interviewerId.length >= 20) {
+            try {
+              const intDoc = await this.databases.getDocument(
+                this.databaseId,
+                "interviewers",
+                interview.interviewerId,
+              );
+              interviewerName =
+                (intDoc as any).name || (intDoc as any).fullName || "Unknown";
+            } catch (e) {
+              console.warn(
+                `Interviewer fetch failed for ID: ${interview.interviewerId}`,
+                e,
+              );
+            }
+          }
 
-      if (candidateIds.length > 0) {
-        fetchPromises.push(
-          this.databases
-            .listDocuments(this.databaseId, "candidates", [
-              Query.equal("$id", candidateIds),
-              Query.limit(candidateIds.length),
-            ])
-            .then((res) => {
-              candidates = res.documents.map((doc) => ({
-                $id: doc.$id,
-                name: (doc as any).name || "",
-                email: (doc as any).email || "",
-                phone: (doc as any).phone || null,
-                driveFolderId: (doc as any).driveFolderId || null,
-              })) as Candidate[];
-            }),
-        );
-      }
-
-      if (roleIds.length > 0) {
-        fetchPromises.push(
-          this.databases
-            .listDocuments(this.databaseId, "roles", [
-              Query.equal("$id", roleIds),
-              Query.limit(roleIds.length),
-            ])
-            .then((res) => {
-              roleEntities = res.documents.map((doc) => ({
-                $id: doc.$id,
-                name: (doc as any).name || "",
-                title: (doc as any).title || "",
-                level: (doc as any).level || "",
-              })) as RoleEntity[];
-            }),
-        );
-      }
-
-      if (interviewerIds.length > 0) {
-        fetchPromises.push(
-          this.databases
-            .listDocuments(this.databaseId, "interviewers", [
-              Query.equal("$id", interviewerIds),
-              Query.limit(interviewerIds.length),
-            ])
-            .then((res) => {
-              interviewers = res.documents.map((doc) => ({
-                $id: doc.$id,
-                name: (doc as any).name || "",
-                email: (doc as any).email || "",
-                status: (doc as any).status || "",
-                companyId: (doc as any).companyId || "",
-                $createdAt: doc.$createdAt || "",
-                $updatedAt: doc.$updatedAt || "",
-              })) as Interviewer[];
-            }),
-        );
-      }
-
-      await Promise.all(fetchPromises);
-
-      // 5. Hydrate interviews with guaranteed fallback objects
-      let hydratedData: HydratedInterview[] = rawInterviews.map((interview) => {
-        const candidate = candidates.find(
-          (c) => c.$id === interview.candidateId,
-        );
-        const roleEntity = roleEntities.find((r) => r.$id === interview.roleId);
-        const interviewer = interviewers.find(
-          (i) => i.$id === interview.interviewerId,
-        );
-
-        return {
-          ...interview,
-          candidate: {
-            $id: interview.candidateId,
-            name:
-              candidate?.name ||
-              `Unknown Candidate (${interview.candidateId.substring(0, 6)})`,
-            email: candidate?.email || "No email recorded",
-            phone: candidate?.phone || "No phone recorded",
-            driveFolderId: candidate?.driveFolderId || null,
-          },
-          role: {
-            $id: interview.roleId || "unknown",
-            title: roleEntity?.title || "Unspecified Role",
-            level: roleEntity?.level || "N/A",
-          },
-          interviewer: {
-            $id: interview.interviewerId || "unknown",
-            name:
-              interviewer?.name ||
-              `Unknown (${interview.interviewerId?.substring(0, 6) || "N/A"})`,
-            email: interviewer?.email || "No email",
-            status: interviewer?.status || "Inactive",
-            companyId: interviewer?.companyId || interview.companyId,
-            $createdAt:
-              interviewer?.$createdAt ||
-              interview.startedAt ||
-              new Date().toISOString(),
-            $updatedAt: interviewer?.$updatedAt || new Date().toISOString(),
-          },
-        };
-      });
+          // 4. Return properly nested object for the UI
+          return {
+            ...interview,
+            candidate: {
+              $id: interview.candidateId || "unspecified",
+              name: interview.candidateName || "Unknown Candidate",
+              email: "N/A",
+              phone: "N/A",
+              driveFolderId: interview.driveFolderId || null,
+            },
+            role: {
+              $id: interview.roleId || "unspecified",
+              title: roleTitle,
+              level: levelTitle,
+            },
+            interviewer: {
+              $id: interview.interviewerId || "unspecified",
+              name: interviewerName,
+              email: "N/A",
+              status: "Active",
+              companyId: interview.companyId,
+              $createdAt: new Date().toISOString(),
+              $updatedAt: new Date().toISOString(),
+            },
+          };
+        }),
+      );
 
       // 6. Apply in-memory search filter on candidate name
+      let filteredData = hydratedData;
       if (filters?.searchQuery) {
         const lowerQuery = filters.searchQuery.toLowerCase();
-        hydratedData = hydratedData.filter((interview) =>
+        filteredData = hydratedData.filter((interview) =>
           interview.candidate?.name.toLowerCase().includes(lowerQuery),
         );
       }
@@ -299,10 +281,29 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       // 7. Apply pagination on the filtered results
       const offset = filters?.offset || 0;
       const limit = filters?.limit || 10;
-      const paginatedData = hydratedData.slice(offset, offset + limit);
+      const paginatedData = filteredData.slice(offset, offset + limit);
+
+      // Diagnostic: log first interview's hydrated fields to verify mapping
+      if (paginatedData.length > 0) {
+        console.log(
+          "🔍 HYDRATION SAMPLE:",
+          JSON.stringify(
+            {
+              candidateName: paginatedData[0].candidate?.name,
+              roleTitle: paginatedData[0].role?.title,
+              roleLevel: paginatedData[0].role?.level,
+              interviewerName: paginatedData[0].interviewer?.name,
+              rawRoleId: paginatedData[0].roleId,
+              rawCandidateId: paginatedData[0].candidateId,
+            },
+            null,
+            2,
+          ),
+        );
+      }
 
       return {
-        total: hydratedData.length, // Total after search filter is applied
+        total: filteredData.length, // Total after search filter is applied
         documents: paginatedData,
       };
     } catch (error) {

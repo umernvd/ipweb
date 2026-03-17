@@ -8,8 +8,6 @@ import {
 } from "./InterviewDetailDrawer";
 import {
   Search,
-  Calendar,
-  Plus,
   ChevronLeft,
   ChevronRight,
   ArrowRight,
@@ -77,8 +75,6 @@ export const InterviewsTable = () => {
     setCurrentPage,
     searchQuery,
     setSearchQuery,
-    statusFilter,
-    setStatusFilter,
     itemsPerPage,
   } = useInterviews();
 
@@ -118,11 +114,6 @@ export const InterviewsTable = () => {
     setCurrentPage(page);
   };
 
-  const handleStatusFilterChange = (status: string) => {
-    setStatusFilter(status);
-    setCurrentPage(1); // Reset to page 1 when filtering
-  };
-
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -147,8 +138,8 @@ export const InterviewsTable = () => {
           No Interviews Found
         </h3>
         <p className="text-sm text-slate-500 mt-1">
-          {searchQuery || statusFilter
-            ? "Try adjusting your filters to see more results."
+          {searchQuery
+            ? "No interviews match your search."
             : "Start an interview on the mobile app to see it here."}
         </p>
       </div>
@@ -218,6 +209,14 @@ export const InterviewsTable = () => {
     return pages;
   };
 
+  // Debug: Log the first interview's data to inspect hydration
+  if (interviews.length > 0) {
+    console.log(
+      "🚨 UI DATA CHECK - First Interview:",
+      JSON.stringify(interviews[0], null, 2),
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -243,23 +242,6 @@ export const InterviewsTable = () => {
               className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm w-full md:w-64 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => handleStatusFilterChange(e.target.value)}
-            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="started">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="reviewed">Reviewed</option>
-          </select>
-          <button className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
-            <Calendar size={16} /> Date Range
-          </button>
-          <button className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-medium shadow-sm transition-all">
-            <Plus size={18} /> Schedule
-          </button>
         </div>
       </div>
 
@@ -300,19 +282,13 @@ export const InterviewsTable = () => {
                   className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                 >
                   <td className="py-3.5 px-6">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-slate-900 text-sm">
-                        {interview.candidate?.name ||
-                          `Candidate ${interview.candidateId.slice(0, 8)}`}
-                      </span>
-                      <span className="text-xs text-slate-500 mt-0.5">
-                        {interview.candidate?.email || interview.candidateId}
-                      </span>
-                    </div>
+                    <span className="font-medium text-slate-900 text-sm">
+                      {interview.candidate?.name || "Unknown Candidate"}
+                    </span>
                   </td>
 
                   <td className="py-3.5 px-6 text-sm text-slate-700">
-                    {interview.role?.title || "N/A"}
+                    {interview.role?.title || "Unspecified Role"}
                   </td>
                   <td className="py-3.5 px-6">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">

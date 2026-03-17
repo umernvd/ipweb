@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCompanyStore } from "@/stores/companyStore";
+import { useAuthStore } from "@/stores/authStore";
 import { DI } from "@/core/di/container";
-import { Company } from "@/core/entities/company";
+import {
+  approveCompanyAdmin,
+  rejectCompanyAdmin,
+} from "@/app/actions/adminActions";
 import {
   CheckCircle,
   XCircle,
@@ -12,35 +17,38 @@ import {
 } from "lucide-react";
 
 export const ApprovalsTable = () => {
-  const [pendingCompanies, setPendingCompanies] = useState<Company[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { pendingCompanies, fetchPendingCompanies, isLoading } =
+    useCompanyStore();
+  const { isAdmin } = useAuthStore();
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const loadData = async () => {
-    try {
-      const data = await DI.companyService.getPendingApprovals();
-      setPendingCompanies(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadData();
-  }, []);
+    fetchPendingCompanies();
+  }, [fetchPendingCompanies]);
 
   const handleDecision = async (id: string, decision: "approve" | "reject") => {
     setProcessingId(id);
     try {
-      if (decision === "approve") {
-        await DI.companyService.approveCompany(id);
+      if (isAdmin) {
+        // Super Admin: Generate JWT and use Server Actions
+        const { jwt } = await DI.authService.createJWT();
+
+        if (decision === "approve") {
+          await approveCompanyAdmin(jwt, id);
+        } else {
+          await rejectCompanyAdmin(jwt, id);
+        }
       } else {
-        await DI.companyService.rejectCompany(id);
+        // Regular user: Use DI service (fallback)
+        if (decision === "approve") {
+          await DI.companyService.approveCompany(id);
+        } else {
+          await DI.companyService.rejectCompany(id);
+        }
       }
-      // Remove from UI immediately (Optimistic-ish update)
-      setPendingCompanies((prev) => prev.filter((c) => c.$id !== id));
+
+      // Refetch to update the list
+      await fetchPendingCompanies();
     } catch (error) {
       console.error("Decision failed", error);
     } finally {
@@ -48,7 +56,7 @@ export const ApprovalsTable = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && pendingCompanies.length === 0) {
     return (
       <div className="p-12 flex justify-center">
         <Loader2 className="animate-spin text-slate-400" />

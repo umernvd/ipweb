@@ -1,108 +1,127 @@
-import { NextRequest, NextResponse } from "next/server";
-import { randomBytes } from "crypto";
-import {
-  Client,
-  Databases,
-  Permission,
-  Role as AppwriteRole,
-} from "node-appwrite";
-import { AppwriteTeamsService } from "@/core/services/AppwriteTeamsService";
-import { sendInterviewerOnboardingEmail } from "@/lib/emailService";
+import { NextResponse } from "next/server";
+import { ID, Query, Permission, Role } from "node-appwrite";
+import { createAdminClient } from "@/lib/appwriteAdminClient";
 
-/**
- * Generate a cryptographically secure 6-character alphanumeric auth code
- * Uses Node.js crypto module for secure random generation
- */
-function generateAuthCode(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const bytes = randomBytes(6);
-  return Array.from(bytes)
-    .map((byte) => chars[byte % chars.length])
-    .join("");
-}
+// Ambiguity-Free Auth Code Generator (No 0, O, 1, I, l)
+const generateSecureAuthCode = () => {
+  const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { companyId, name, email, status } = body;
+    const { email, name, companyId } = await req.json();
+    // Generate it right here on the server
+    const finalAuthCode = generateSecureAuthCode();
+    const { users, databases, teams } = await createAdminClient();
 
-    // Validate required fields (authCode is NOT expected from client)
-    if (!companyId || !name || !email || !status) {
+    // 1. STRICT DB PRE-CHECK
+    const existingDocs = await databases.listDocuments(
+      "interview_pro_db",
+      "interviewers",
+      [Query.equal("email", email)],
+    );
+    if (existingDocs.total > 0) {
       return NextResponse.json(
-        { error: "Missing required fields: companyId, name, email, status" },
-        { status: 400 },
+        { error: "An interviewer with this email already exists." },
+        { status: 409 },
       );
     }
 
-    // Generate secure auth code on the backend using Node.js crypto
-    const authCode = generateAuthCode();
-
-    // Initialize Appwrite server SDK
-    const appwriteClient = new Client()
-      .setEndpoint("https://cloud.appwrite.io/v1")
-      .setProject("interviewpro")
-      .setKey(process.env.APPWRITE_API_KEY || "");
-
-    const databases = new Databases(appwriteClient);
-    const teamsService = new AppwriteTeamsService();
-
-    // Fetch company name for email
-    const company = await databases.getDocument(
-      "interview_pro_db",
-      "companies",
-      companyId,
-    );
-    const companyName = (company as any).name || "Your Company";
-
-    // Create interviewer document with team-based permissions
-    const interviewerDoc = await databases.createDocument(
-      "interview_pro_db",
-      "interviewers",
-      "unique()",
-      {
-        companyId,
-        name,
-        email,
-        status,
-        authCode, // Generated securely on backend
-      },
-      [
-        Permission.read(AppwriteRole.team(companyId)),
-        Permission.write(AppwriteRole.team(companyId)),
-        Permission.update(AppwriteRole.team(companyId)),
-        Permission.delete(AppwriteRole.team(companyId)),
-      ],
-    );
-
-    // Add interviewer to company team
+    // 2. ORPHAN CLEANUP (Ensures clean slate)
     try {
-      await teamsService.addInterviewerToTeam(companyId, email, name);
-    } catch (teamError) {
-      console.error("Failed to add interviewer to team:", teamError);
-      // Don't fail the entire operation if team membership fails
+      const existingUsers = await users.list([Query.equal("email", email)]);
+      if (existingUsers.total > 0) {
+        await users.delete(existingUsers.users[0].$id);
+      }
+    } catch (e) {
+      // User doesn't exist, proceed safely
     }
 
-    // Send onboarding email with the generated auth code
-    try {
-      await sendInterviewerOnboardingEmail(email, name, companyName, authCode);
-    } catch (emailError) {
-      console.error("Failed to send onboarding email:", emailError);
-      // Don't fail the entire operation if email fails
-      // The interviewer is still created successfully
+    // 3. CREATE AUTH USER
+    const authUser = await users.create(
+      ID.unique(),
+      email,
+      undefined,
+      finalAuthCode,
+      name,
+    );
+    const userId = authUser.$id;
+
+    // CRITICAL GUARD: Eradicate null userId fallback
+    if (!userId) {
+      console.error(
+        "❌ CRITICAL: Cannot create document without a valid Auth userId",
+      );
+      return NextResponse.json(
+        { error: "CRITICAL: Auth user creation failed - no userId available" },
+        { status: 500 },
+      );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        interviewerId: interviewerDoc.$id,
-        message: "Interviewer created successfully",
-      },
-      { status: 201 },
-    );
+    // --- ATOMIC TRANSACTION BLOCK STARTS ---
+    try {
+      // 4. CREATE DB DOC (With Explicit Permissions!)
+      const document = await databases.createDocument(
+        "interview_pro_db",
+        "interviewers",
+        ID.unique(),
+        {
+          name,
+          email,
+          companyId,
+          userId,
+          authCode: finalAuthCode,
+          isActive: true,
+          status: "Active",
+        },
+        [
+          // Give the specific user read/write access to their own profile
+          Permission.read(Role.user(userId)),
+          Permission.update(Role.user(userId)),
+          // Give the company team read/write access
+          Permission.read(Role.team(companyId)),
+          Permission.update(Role.team(companyId)),
+          Permission.delete(Role.team(companyId)),
+        ],
+      );
+
+      // SUCCESS: Everything worked.
+      // Background non-critical operations - don't wait for them
+      teams
+        .createMembership(
+          companyId,
+          ["interviewer"],
+          undefined,
+          userId,
+          undefined,
+          "http://localhost/login",
+          name,
+        )
+        .catch((teamError) => {
+          console.error("⚠️ Failed to add interviewer to team:", teamError);
+        });
+
+      return NextResponse.json(document, { status: 201 });
+    } catch (transactionError: any) {
+      // 🚨 ROLLBACK: The DB creation failed!
+      // Destroy the Auth user so we don't leave broken data behind.
+      console.error(
+        "Transaction failed! Rolling back Auth User...",
+        transactionError.message,
+      );
+      await users.delete(userId);
+      throw transactionError; // Pass error to the outer catch for the 500 response
+    }
+    // --- ATOMIC TRANSACTION BLOCK ENDS ---
   } catch (error: any) {
-    console.error("Error creating interviewer:", error);
+    console.error("CRITICAL CREATION ERROR:", error.message);
     return NextResponse.json(
-      { error: error?.message || "Failed to create interviewer" },
+      { error: error.message || "Failed to create interviewer" },
       { status: 500 },
     );
   }

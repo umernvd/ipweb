@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, User, Mail, ChevronDown, Check } from "lucide-react";
+import { X, User, Mail, ChevronDown, Check, Loader2 } from "lucide-react";
 import {
   interviewerSchema,
   type InterviewerFormValues,
@@ -23,11 +24,14 @@ export const AddInterviewerModal = ({
   onClose,
   onSave,
 }: AddInterviewerModalProps) => {
+  // Strict loading state to prevent double-submits
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<InterviewerFormValues>({
     resolver: zodResolver(interviewerSchema),
     defaultValues: {
@@ -43,9 +47,17 @@ export const AddInterviewerModal = ({
   };
 
   const onSubmit = async (data: InterviewerFormValues) => {
-    const success = await onSave(data.fullName, data.email, data.status);
-    if (success) {
-      handleClose();
+    // Set loading state at the very beginning to prevent double-submits
+    setIsSubmitting(true);
+
+    try {
+      const success = await onSave(data.fullName, data.email, data.status);
+      if (success) {
+        handleClose();
+      }
+    } finally {
+      // Always reset loading state, even if there's an error
+      setIsSubmitting(false);
     }
   };
 
@@ -157,17 +169,21 @@ export const AddInterviewerModal = ({
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+              disabled={isSubmitting}
+              className="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-sm hover:bg-primary-hover disabled:opacity-70 transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-sm hover:bg-primary-hover disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center gap-2 min-w-[160px] justify-center"
             >
               {isSubmitting ? (
-                "Saving..."
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Creating...
+                </>
               ) : (
                 <>
                   <Check size={16} />

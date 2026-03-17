@@ -13,7 +13,8 @@ import {
 } from "@/core/validators/config.validator";
 
 export const LevelsList = () => {
-  const { levels, isLoading, addLevel, removeLevel } = useLevelStore();
+  const { levels, isLoading, error, addLevel, removeLevel, clearError } =
+    useLevelStore();
   const { selectedRoleId } = useRoleStore();
   const { companyId } = useAuthStore();
   const [isAdding, setIsAdding] = useState(false);
@@ -88,6 +89,19 @@ export const LevelsList = () => {
 
   return (
     <div className="space-y-3">
+      {/* Error Message Display */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between">
+          <p className="text-sm text-red-700">{error}</p>
+          <button
+            onClick={clearError}
+            className="text-red-500 hover:text-red-700"
+          >
+            <XIcon size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Levels Table Header */}
       <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-slate-50 rounded-lg text-xs font-semibold text-slate-500 uppercase tracking-wide">
         <div className="col-span-1 text-center">#</div>
