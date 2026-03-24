@@ -63,7 +63,12 @@ export async function POST(request: NextRequest) {
     await teamsService.createCompanyTeam(companyId, companyName);
 
     // 4. Add the company admin to the team
-    await teamsService.addInterviewerToTeam(companyId, email, companyName);
+    await teamsService.addInterviewerToTeam(
+      companyId,
+      email,
+      user.$id,
+      companyName,
+    );
 
     return NextResponse.json(
       {
