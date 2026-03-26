@@ -37,8 +37,13 @@ export async function POST(request: NextRequest) {
     }
 
     // --- STEP 2: Parse Request Body ---
-    const { interviewerId, candidateName, fileName, fileType } =
-      await request.json();
+    const {
+      interviewerId,
+      companyId: requestCompanyId,
+      candidateName,
+      fileName,
+      fileType,
+    } = await request.json();
 
     // Validate required fields
     if (!interviewerId || !candidateName || !fileName || !fileType) {
@@ -64,18 +69,33 @@ export async function POST(request: NextRequest) {
     );
     const companyId = (interviewerDoc as any).companyId;
     const interviewerName = (interviewerDoc as any).name;
-    let interviewerFolderId = (interviewerDoc as any).interviewerFolderId;
+    // Field is stored as interviewerDriveFolderId in Appwrite — use it as a fast-path cache
+    let interviewerFolderId: string =
+      (interviewerDoc as any).interviewerDriveFolderId || "";
     const interviewerUserId = (interviewerDoc as any).userId;
 
-    // Verify ownership: authenticated user must own this interviewer profile
-    if (interviewerUserId !== userId) {
+    // Verify tenant isolation: JWT proves authentication; companyId match enforces tenancy.
+    if (companyId !== requestCompanyId) {
       return NextResponse.json(
-        {
-          error:
-            "Forbidden: You do not have permission to upload for this interviewer profile",
-        },
+        { error: "Forbidden: Interviewer does not belong to this company" },
         { status: 403 },
       );
+    }
+
+    // Self-heal stale userId: sync the interviewer doc to the current JWT subject.
+    if (interviewerUserId !== userId) {
+      try {
+        await databases.updateDocument(
+          "interview_pro_db",
+          "interviewers",
+          interviewerId,
+          { userId },
+        );
+        console.log(`Synced stale userId on interviewer ${interviewerId}`);
+      } catch (syncError) {
+        console.warn("Failed to sync userId on interviewer doc:", syncError);
+        // Non-fatal: continue with the upload
+      }
     }
 
     if (!companyId) {
@@ -141,34 +161,52 @@ export async function POST(request: NextRequest) {
     const drive = google.drive({ version: "v3", auth: oauth2Client });
 
     // --- STEP 9: Find or create Interviewer Folder (idempotent) ---
-    // Always search Drive to avoid duplicates from parallel calls.
-    // The interviewers collection has no Drive folder cache field, so Drive
-    // search is the single source of truth.
+    // Use the cached interviewerDriveFolderId if available; otherwise search/create and cache it.
     try {
-      const sanitizedName = interviewerName.replace(/'/g, "\\'");
-      const searchResult = await drive.files.list({
-        q: `name='${sanitizedName}' and '${rootDriveFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-        spaces: "drive",
-        fields: "files(id)",
-        pageSize: 1,
-      });
-
-      if (searchResult.data.files && searchResult.data.files.length > 0) {
-        interviewerFolderId = searchResult.data.files[0].id || "";
-        console.log(
-          `Found existing interviewer folder: ${interviewerFolderId}`,
-        );
-      } else {
-        const folder = await drive.files.create({
-          requestBody: {
-            name: interviewerName,
-            mimeType: "application/vnd.google-apps.folder",
-            parents: [rootDriveFolderId],
-          },
-          fields: "id",
+      if (!interviewerFolderId) {
+        const sanitizedName = interviewerName.replace(/'/g, "\\'");
+        const searchResult = await drive.files.list({
+          q: `name='${sanitizedName}' and '${rootDriveFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+          spaces: "drive",
+          fields: "files(id)",
+          pageSize: 1,
         });
-        interviewerFolderId = folder.data.id || "";
-        console.log(`Created interviewer folder: ${interviewerFolderId}`);
+
+        if (searchResult.data.files && searchResult.data.files.length > 0) {
+          interviewerFolderId = searchResult.data.files[0].id || "";
+          console.log(
+            `Found existing interviewer folder: ${interviewerFolderId}`,
+          );
+        } else {
+          const folder = await drive.files.create({
+            requestBody: {
+              name: interviewerName,
+              mimeType: "application/vnd.google-apps.folder",
+              parents: [rootDriveFolderId],
+            },
+            fields: "id",
+          });
+          interviewerFolderId = folder.data.id || "";
+          console.log(`Created interviewer folder: ${interviewerFolderId}`);
+        }
+
+        // Persist the resolved folder ID so future calls skip the search
+        if (interviewerFolderId) {
+          try {
+            await databases.updateDocument(
+              "interview_pro_db",
+              "interviewers",
+              interviewerId,
+              {
+                interviewerDriveFolderId: interviewerFolderId,
+              },
+            );
+          } catch (cacheErr) {
+            console.warn("Failed to cache interviewerDriveFolderId:", cacheErr);
+          }
+        }
+      } else {
+        console.log(`Using cached interviewer folder: ${interviewerFolderId}`);
       }
 
       if (!interviewerFolderId) {

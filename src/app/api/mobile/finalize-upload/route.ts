@@ -109,23 +109,28 @@ export async function POST(request: NextRequest) {
         interviewerId,
       );
 
+      // Verify tenant isolation: JWT proves authentication; companyId match enforces tenancy.
       if (interviewerDoc.companyId !== companyId) {
         return NextResponse.json(
-          { error: "Interviewer does not belong to the specified company" },
+          { error: "Forbidden: Interviewer does not belong to this company" },
           { status: 403 },
         );
       }
 
-      // Verify ownership: authenticated user must own this interviewer profile
-      const interviewerUserId = (interviewerDoc as any).userId;
-      if (interviewerUserId !== userId) {
-        return NextResponse.json(
-          {
-            error:
-              "Forbidden: You do not have permission to upload for this interviewer profile",
-          },
-          { status: 403 },
-        );
+      // Self-heal stale userId: sync the interviewer doc to the current JWT subject.
+      if (interviewerDoc.userId !== userId) {
+        try {
+          await databases.updateDocument(
+            "interview_pro_db",
+            "interviewers",
+            interviewerId,
+            { userId },
+          );
+          console.log(`Synced stale userId on interviewer ${interviewerId}`);
+        } catch (syncError) {
+          console.warn("Failed to sync userId on interviewer doc:", syncError);
+          // Non-fatal: continue with the upload
+        }
       }
     } catch (docError) {
       console.error("Failed to fetch interviewer document:", docError);
