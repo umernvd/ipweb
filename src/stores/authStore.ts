@@ -6,18 +6,23 @@ interface AuthStore {
   user: Models.User<Models.Preferences> | null;
   isLoading: boolean;
   isAdmin: boolean; // True if Super Admin
-  companyId: string | null; // ✅ Add this
+  companyId: string | null;
+  authError: string | null; // Replaces alert() calls
 
   checkSession: () => Promise<void>;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
+  clearAuthError: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: true,
   isAdmin: false,
-  companyId: null, // ✅ Initialize
+  companyId: null,
+  authError: null,
+
+  clearAuthError: () => set({ authError: null }),
 
   checkSession: async () => {
     set({ isLoading: true });
@@ -64,27 +69,27 @@ export const useAuthStore = create<AuthStore>((set) => ({
         }
 
         if (company.status === "pending") {
-          // 🛑 BLOCK LOGIN - Account pending approval
-          alert("Your account is pending approval.");
           await DI.authService.logout();
           set({
             user: null,
             isAdmin: false,
             companyId: null,
             isLoading: false,
+            authError:
+              "Your account is pending approval. Please wait for admin review.",
           });
           return;
         }
 
         if (company.status === "rejected") {
-          // 🛑 BLOCK LOGIN - Account rejected
-          alert("Your account was rejected.");
           await DI.authService.logout();
           set({
             user: null,
             isAdmin: false,
             companyId: null,
             isLoading: false,
+            authError:
+              "Your account registration was rejected. Please contact support.",
           });
           return;
         }

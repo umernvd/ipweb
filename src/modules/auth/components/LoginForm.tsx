@@ -15,23 +15,28 @@ export const LoginForm = () => {
   const [error, setError] = useState("");
 
   const { login } = useAuthStore();
+  const authError = useAuthStore((s) => s.authError);
+  const clearAuthError = useAuthStore((s) => s.clearAuthError);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    clearAuthError();
 
     try {
       await login(email, password);
 
-      // 1. Check who just logged in
-      const { isAdmin } = useAuthStore.getState();
+      // Check who just logged in
+      const { isAdmin, authError: storeError } = useAuthStore.getState();
 
-      // 2. Route them correctly
+      // If authStore set an error (pending/rejected), don't redirect
+      if (storeError) return;
+
       if (isAdmin) {
-        router.push("/super-admin/dashboard"); // 🚀 Super Admin
+        router.push("/super-admin/dashboard");
       } else {
-        router.push("/company/dashboard"); // 🏢 Regular Company
+        router.push("/company/dashboard");
       }
     } catch (err) {
       setError("Invalid credentials. Please try again.");
@@ -43,9 +48,9 @@ export const LoginForm = () => {
   return (
     <form onSubmit={handleLogin} className="flex flex-col gap-5">
       {/* Error Message */}
-      {error && (
+      {(error || authError) && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-          {error}
+          {error || authError}
         </div>
       )}
 

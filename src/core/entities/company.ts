@@ -11,7 +11,7 @@ export interface Company {
   email: string;
   status: CompanyStatus;
   total_interviews: number;
-  driveRefreshToken?: string;
+  googleRefreshToken?: string;
   driveConnectedAt?: string;
   $createdAt: string;
 }

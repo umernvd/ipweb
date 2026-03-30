@@ -55,13 +55,17 @@ export async function POST(request: NextRequest) {
       companyId,
     );
 
-    const driveRefreshToken = (company as any).driveRefreshToken;
-    if (!driveRefreshToken) {
+    const encryptedRefreshToken = (company as any).googleRefreshToken;
+    if (!encryptedRefreshToken) {
       return NextResponse.json(
         { error: "Company has not connected Google Drive" },
         { status: 400 },
       );
     }
+
+    // Decrypt the refresh token before use
+    const { decryptToken } = await import("@/lib/encryption");
+    const driveRefreshToken = decryptToken(encryptedRefreshToken);
 
     // Initialize Google OAuth2 client with refresh token
     const oauth2Client = new google.auth.OAuth2(
