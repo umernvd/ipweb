@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ID, Query, Permission, Role } from "node-appwrite";
 import { createAdminClient } from "@/lib/appwriteAdminClient";
+import { sendInterviewerOnboardingEmail } from "@/lib/emailService";
 
 // Ambiguity-Free Auth Code Generator (No 0, O, 1, I, l)
 const generateSecureAuthCode = () => {
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
 
       // SUCCESS: Everything worked.
       // Background non-critical operations - don't wait for them
+
       teams
         .createMembership(
           companyId,
@@ -104,6 +106,22 @@ export async function POST(req: Request) {
         )
         .catch((teamError) => {
           console.error("⚠️ Failed to add interviewer to team:", teamError);
+        });
+
+      // Send onboarding email — fire-and-forget, never blocks or rolls back
+      databases
+        .getDocument("interview_pro_db", "companies", companyId)
+        .then((companyDoc) => {
+          const companyName = (companyDoc as any).name || "Your Company";
+          return sendInterviewerOnboardingEmail(
+            email,
+            name,
+            companyName,
+            finalAuthCode,
+          );
+        })
+        .catch((emailError) => {
+          console.error("⚠️ Failed to send onboarding email:", emailError);
         });
 
       return NextResponse.json(document, { status: 201 });
