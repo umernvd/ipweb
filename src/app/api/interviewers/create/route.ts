@@ -81,6 +81,8 @@ export async function POST(req: Request) {
           status: "Active",
         },
         [
+          // Allow unauthenticated reads so Flutter pre-auth login query can find the document
+          Permission.read(Role.any()),
           // Give the specific user read/write access to their own profile
           Permission.read(Role.user(userId)),
           Permission.update(Role.user(userId)),
