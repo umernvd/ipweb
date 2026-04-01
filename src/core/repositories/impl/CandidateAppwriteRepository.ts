@@ -23,6 +23,9 @@ export class CandidateAppwriteRepository implements ICandidateRepository {
       ID.unique(),
       data,
       [
+        // Allow unauthenticated reads so web dashboard can fetch candidates
+        Permission.read(Role.any()),
+        // Team-level permissions for write/update/delete
         Permission.read(Role.team(data.companyId)),
         Permission.write(Role.team(data.companyId)),
         Permission.update(Role.team(data.companyId)),

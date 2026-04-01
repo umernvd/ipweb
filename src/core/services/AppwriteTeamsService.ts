@@ -48,19 +48,21 @@ export class AppwriteTeamsService {
     name: string,
   ) {
     try {
-      // EXACT positional arguments for Appwrite Node SDK
+      // Use userId-based membership to add user directly without email invite
+      // Email invites require the user to click an acceptance link before
+      // they become active team members — which breaks RLS reads immediately after registration
       const membership = await this.teams.createMembership(
-        companyId, // 1. teamId
-        ["interviewer"], // 2. roles
-        email, // 3. email (MUST be the email string)
-        userId, // 4. userId
-        undefined, // 5. phone (leave undefined)
-        "http://localhost/login", // 6. url (Hardcoded trusted URL)
-        name, // 7. name
+        companyId, // teamId
+        ["interviewer"], // roles
+        undefined, // email — omit to skip invite flow
+        userId, // userId — direct add, no confirmation needed
+        undefined, // phone
+        undefined, // url — not needed when using userId
+        name, // name
       );
       return membership;
     } catch (error) {
-      console.error("Team invite failed:", error);
+      console.error("Team membership failed:", error);
       throw error;
     }
   }

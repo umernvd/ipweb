@@ -44,11 +44,12 @@ export async function POST(req: Request) {
     }
 
     // 3. CREATE AUTH USER
+    // Password must match Flutter app's convention: authCode + "_MagicLogin"
     const authUser = await users.create(
       ID.unique(),
       email,
       undefined,
-      finalAuthCode,
+      finalAuthCode + "_MagicLogin",
       name,
     );
     const userId = authUser.$id;
@@ -96,6 +97,7 @@ export async function POST(req: Request) {
       // SUCCESS: Everything worked.
       // Background non-critical operations - don't wait for them
 
+      // Add to team directly via userId — no email invite, no confirmation needed
       teams
         .createMembership(
           companyId,
@@ -103,7 +105,7 @@ export async function POST(req: Request) {
           undefined,
           userId,
           undefined,
-          "http://localhost/login",
+          undefined,
           name,
         )
         .catch((teamError) => {

@@ -45,8 +45,22 @@ export async function POST(request: NextRequest) {
       fileType,
     } = await request.json();
 
+    console.log("📦 [init-upload] Body received:", {
+      interviewerId,
+      companyId: requestCompanyId,
+      candidateName,
+      fileName,
+      fileType,
+    });
+
     // Validate required fields
     if (!interviewerId || !candidateName || !fileName || !fileType) {
+      console.error("❌ [init-upload] Missing required fields:", {
+        interviewerId: !!interviewerId,
+        candidateName: !!candidateName,
+        fileName: !!fileName,
+        fileType: !!fileType,
+      });
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
@@ -115,6 +129,11 @@ export async function POST(request: NextRequest) {
     const encryptedRefreshToken = (companyDoc as any).googleRefreshToken;
 
     if (!rootDriveFolderId || !encryptedRefreshToken) {
+      console.error("❌ [init-upload] Google Drive not connected:", {
+        rootDriveFolderId: rootDriveFolderId || "MISSING",
+        googleRefreshToken: encryptedRefreshToken ? "present" : "MISSING",
+        companyId,
+      });
       return NextResponse.json(
         { error: "Company has not connected Google Drive" },
         { status: 400 },

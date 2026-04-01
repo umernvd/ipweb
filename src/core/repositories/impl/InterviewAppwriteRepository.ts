@@ -178,7 +178,27 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
       // 5. Hydrate interviews by fetching related documents
       const hydratedData = await Promise.all(
         rawInterviews.map(async (interview) => {
-          // 1. Fetch Role Name
+          // 1. Fetch Candidate Data (email, phone)
+          let candidateEmail = "N/A";
+          let candidatePhone = "N/A";
+          if (interview.candidateId && interview.candidateId.length >= 20) {
+            try {
+              const candidateDoc = await this.databases.getDocument(
+                this.databaseId,
+                "candidates",
+                interview.candidateId,
+              );
+              candidateEmail = (candidateDoc as any).email || "N/A";
+              candidatePhone = (candidateDoc as any).phone || "N/A";
+            } catch (e) {
+              console.warn(
+                `Candidate fetch failed for ID: ${interview.candidateId}`,
+                e,
+              );
+            }
+          }
+
+          // 2. Fetch Role Name
           let roleTitle = "Unspecified Role";
           if (interview.roleId && interview.roleId.length >= 20) {
             try {
@@ -199,7 +219,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
             roleTitle = interview.roleId;
           }
 
-          // 2. Fetch Level Name
+          // 3. Fetch Level Name
           let levelTitle = "N/A";
           if (interview.levelId && interview.levelId.length >= 20) {
             try {
@@ -222,7 +242,7 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
             levelTitle = interview.levelId;
           }
 
-          // 3. Fetch Interviewer Name
+          // 4. Fetch Interviewer Name
           let interviewerName = "Unknown Interviewer";
           if (interview.interviewerId && interview.interviewerId.length >= 20) {
             try {
@@ -241,14 +261,14 @@ export class InterviewAppwriteRepository implements IInterviewRepository {
             }
           }
 
-          // 4. Return properly nested object for the UI
+          // 5. Return properly nested object for the UI
           return {
             ...interview,
             candidate: {
               $id: interview.candidateId || "unspecified",
               name: interview.candidateName || "Unknown Candidate",
-              email: "N/A",
-              phone: "N/A",
+              email: candidateEmail,
+              phone: candidatePhone,
               driveFolderId: interview.driveFolderId || null,
             },
             role: {
