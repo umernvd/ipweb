@@ -11,7 +11,7 @@ export interface Level {
   $id: string;
   title: string;
   description: string;
-  roleId: string;
+  roleIds?: string[]; // Optional - can be empty for shared levels
   companyId: string;
   sortOrder: number;
   isActive: boolean;
