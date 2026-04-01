@@ -233,12 +233,6 @@ export const QuestionBankList = () => {
                 {/* Hover Actions */}
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Edit"
-                  >
-                    <Pencil size={18} />
-                  </button>
-                  <button
                     onClick={() => handleDelete(q.$id)}
                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete"
@@ -274,32 +268,6 @@ export const QuestionBankList = () => {
             </div>
           ))
         )}
-      </div>
-
-      {/* Modern Pagination */}
-      <div className="flex items-center justify-between pt-4">
-        <div className="text-sm text-slate-500">
-          Showing <span className="font-medium text-slate-900">1</span> to{" "}
-          <span className="font-medium text-slate-900">
-            {Math.min(filteredQuestions.length, 3)}
-          </span>{" "}
-          of{" "}
-          <span className="font-medium text-slate-900">
-            {filteredQuestions.length}
-          </span>{" "}
-          results
-        </div>
-        <div className="flex gap-2">
-          <button
-            className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            disabled
-          >
-            Previous
-          </button>
-          <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            Next
-          </button>
-        </div>
       </div>
 
       {/* Add Question Modal */}
