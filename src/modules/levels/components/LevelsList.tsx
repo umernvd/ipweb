@@ -40,11 +40,11 @@ export const LevelsList = () => {
     if (!selectedRoleId || !companyId) return;
 
     await addLevel({
-      ...data,
-      roleId: selectedRoleId,
-      companyId: companyId,
-      // FIX 2: Ensure description is a string (DB requires it), even if optional in form
+      title: data.title,
       description: data.description || "",
+      sortOrder: data.sortOrder,
+      roleIds: [selectedRoleId], // Convert roleId to roleIds array
+      companyId: companyId,
     });
 
     reset({

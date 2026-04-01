@@ -150,23 +150,25 @@ export const InterviewsTable = () => {
     const detailData: InterviewDetail = {
       id: interview.$id,
       candidate: {
-        name: interview.candidate?.name || "Candidate",
-        email: interview.candidate?.email || "candidate@example.com",
-        phone: interview.candidate?.phone || "+1 (555) 000-0000",
+        name:
+          interview.candidate?.name ||
+          interview.candidateName ||
+          "Unknown Candidate",
+        email: interview.candidate?.email || "—",
+        phone: interview.candidate?.phone || "—",
+        driveFolderId: interview.driveFolderId || null,
       },
-      role: interview.role?.title || "Role",
-      level: interview.role?.level || "Level",
-      interviewer: interview.interviewer?.name || "Unknown",
-      date: new Date(interview.startedAt || Date.now()).toLocaleDateString(),
-      score: interview.score || 0,
-      summary: interview.aiSummary || "No summary available",
-      skills: [
-        { name: "Technical Knowledge", score: interview.score || 0 },
-        { name: "Communication", score: interview.score || 0 },
-      ],
-      cvName: "Resume.pdf",
+      role: interview.role?.title || "—",
+      level: interview.role?.level || "—",
+      interviewer: interview.interviewer?.name || "—",
+      date: interview.startedAt
+        ? new Date(interview.startedAt).toLocaleDateString()
+        : "—",
+      score: interview.score ?? null,
+      summary: interview.aiSummary || "",
+      skills: [],
       audioUrl: interview.driveFileUrl || "",
-      cvUrl: interview.driveFolderId || "",
+      cvUrl: interview.cvDriveUrl || interview.driveFolderId || "",
     };
 
     setSelectedInterview(detailData);
@@ -262,9 +264,6 @@ export const InterviewsTable = () => {
                 <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Interviewer
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">
-                  AI Score
-                </th>
                 <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Date
                 </th>
@@ -297,9 +296,6 @@ export const InterviewsTable = () => {
                   </td>
                   <td className="py-3.5 px-6 text-sm text-slate-700">
                     {interview.interviewer?.name || "Unknown"}
-                  </td>
-                  <td className="py-3.5 px-6 text-center">
-                    {getScoreBadge(interview.score)}
                   </td>
                   <td className="py-3.5 px-6 text-sm text-slate-500">
                     {interview.startedAt
