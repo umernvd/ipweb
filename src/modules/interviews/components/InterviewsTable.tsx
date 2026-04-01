@@ -211,14 +211,6 @@ export const InterviewsTable = () => {
     return pages;
   };
 
-  // Debug: Log the first interview's data to inspect hydration
-  if (interviews.length > 0) {
-    console.log(
-      "🚨 UI DATA CHECK - First Interview:",
-      JSON.stringify(interviews[0], null, 2),
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6 h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

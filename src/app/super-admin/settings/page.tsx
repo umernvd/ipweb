@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { User, Save } from "lucide-react";
 import { useUser } from "@/context/UserContext";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function SettingsPage() {
   const { fullName, updateFullName } = useUser();
+  const { user } = useAuthStore();
   const [localFullName, setLocalFullName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{
@@ -25,29 +27,15 @@ export default function SettingsPage() {
 
     setIsSaving(true);
     try {
-      // Simulate API call to save profile to database
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call the real updateFullName function from UserContext
+      updateFullName(localFullName.trim());
 
-      // Mock API response - in production, this would be a real API call
-      const mockApiResponse = {
-        success: true,
-        data: {
-          fullName: localFullName.trim(),
-          email: "admin@hireai.com",
-          updatedAt: new Date().toISOString(),
-        },
-      };
-
-      // On successful API response, update the global UserContext
-      if (mockApiResponse.success) {
-        updateFullName(mockApiResponse.data.fullName);
-        setSaveMessage({
-          type: "success",
-          text: "Profile updated successfully",
-        });
-        // Auto-clear message after 3 seconds
-        setTimeout(() => setSaveMessage(null), 3000);
-      }
+      setSaveMessage({
+        type: "success",
+        text: "Profile updated successfully",
+      });
+      // Auto-clear message after 3 seconds
+      setTimeout(() => setSaveMessage(null), 3000);
     } catch (error) {
       setSaveMessage({ type: "error", text: "Failed to update profile" });
       // Auto-clear error message after 3 seconds
@@ -91,7 +79,7 @@ export default function SettingsPage() {
                 Email Address
               </label>
               <input
-                defaultValue="admin@hireai.com"
+                defaultValue={user?.email || "admin@hireai.com"}
                 disabled
                 className="w-full mt-1 p-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed"
               />

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useAuthStore } from "@/stores/authStore";
+import { useSuperAdminStore } from "@/stores/superAdminStore";
 
 const navItems = [
   { name: "Dashboard", href: "/super-admin/dashboard", icon: LayoutDashboard },
@@ -18,8 +19,8 @@ const navItems = [
     name: "Approvals",
     href: "/super-admin/approvals",
     icon: ShieldCheck,
-    badge: 3,
-  }, // Mock badge count
+    badgeKey: "pendingApprovals",
+  },
   { name: "All Companies", href: "/super-admin/companies", icon: Building2 },
   { name: "Settings", href: "/super-admin/settings", icon: Settings },
 ];
@@ -28,6 +29,7 @@ export const SuperAdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthStore();
+  const { stats } = useSuperAdminStore();
 
   const handleLogout = async () => {
     await logout();
@@ -55,6 +57,9 @@ export const SuperAdminSidebar = () => {
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
+            const badgeCount = item.badgeKey
+              ? stats[item.badgeKey as keyof typeof stats]
+              : null;
 
             return (
               <Link
@@ -71,9 +76,9 @@ export const SuperAdminSidebar = () => {
                   <Icon className="w-5 h-5" />
                   <span className="text-sm font-semibold">{item.name}</span>
                 </div>
-                {item.badge && (
+                {badgeCount !== null && badgeCount > 0 && (
                   <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
-                    {item.badge}
+                    {badgeCount}
                   </span>
                 )}
               </Link>
