@@ -26,7 +26,13 @@ export const useLevels = (roleId?: string) => {
     if (!companyId) return false;
     setIsMutating(true);
     try {
-      await addLevel({ title, roleId, description, sortOrder, companyId });
+      await addLevel({
+        title,
+        roleIds: [roleId], // Changed from roleId to roleIds array
+        description,
+        sortOrder,
+        companyId,
+      });
       return true;
     } catch (err: any) {
       console.error(err);

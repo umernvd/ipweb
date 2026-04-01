@@ -6,6 +6,7 @@ import { DI } from "@/core/di/container";
 interface LevelStore {
   levels: Level[];
   isLoading: boolean;
+  isCreating: boolean;
   error: string | null;
 
   fetchLevels: (companyId: string, roleId?: string) => Promise<void>;
@@ -20,6 +21,7 @@ export const useLevelStore = create<LevelStore>()(
     (set, get) => ({
       levels: [],
       isLoading: false,
+      isCreating: false,
       error: null,
 
       fetchLevels: async (companyId, roleId) => {
@@ -36,6 +38,10 @@ export const useLevelStore = create<LevelStore>()(
       },
 
       addLevel: async (newLevelData) => {
+        // Guard: prevent concurrent creates (double-submit / StrictMode double-invoke)
+        if (get().isCreating) return;
+        set({ isCreating: true });
+
         const tempId = "temp-" + Date.now();
         const tempLevel = {
           ...newLevelData,
@@ -65,6 +71,8 @@ export const useLevelStore = create<LevelStore>()(
             error: errorMessage,
           }));
           console.error(err);
+        } finally {
+          set({ isCreating: false });
         }
       },
 
@@ -87,8 +95,6 @@ export const useLevelStore = create<LevelStore>()(
       setError: (error: string) => set({ error }),
       clearError: () => set({ error: null }),
     }),
-    {
-      name: "level-storage",
-    },
+    { name: "level-storage" },
   ),
 );

@@ -55,6 +55,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
       // 4. Fetch company and check status
       try {
         const company = await DI.companyService.getById(companyId);
+        console.log(
+          "🏢 [checkSession] company fetch result:",
+          company
+            ? `found (status: ${company.status})`
+            : "NULL - RLS blocking read",
+        );
 
         if (!company) {
           // Company not found
