@@ -56,18 +56,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart Area */}
         <div className="col-span-1 lg:col-span-2 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900">
               Interview Activity
             </h3>
-            <div className="flex gap-2">
-              <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200">
-                Week
-              </button>
-              <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-white shadow-sm">
-                Month
-              </button>
-            </div>
           </div>
 
           <div className="h-64 w-full rounded-lg bg-slate-50 flex items-end justify-between px-6 pb-0 pt-10 gap-2 relative overflow-hidden">
@@ -96,12 +88,6 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-slate-900">
               Recent Interviews
             </h3>
-            <a
-              href="#"
-              className="text-sm font-medium text-primary hover:opacity-80"
-            >
-              View all
-            </a>
           </div>
           <div className="flex flex-col gap-4 overflow-y-auto pr-1">
             {recentInterviews.length === 0 ? (
@@ -149,7 +135,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      <div className="h-10"></div>
     </div>
   );
 }

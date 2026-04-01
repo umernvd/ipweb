@@ -37,9 +37,6 @@ export default function SettingsPage() {
               wiped.
             </p>
           </div>
-          <button className="shrink-0 px-4 py-2 border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg text-sm font-medium transition-colors shadow-sm">
-            Delete Account
-          </button>
         </div>
       </div>
     </div>

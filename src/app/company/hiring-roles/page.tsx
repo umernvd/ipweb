@@ -39,7 +39,7 @@ export default function HiringRolesPage() {
       <div className="w-2/3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         {selectedRoleId ? (
           <>
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div className="p-4 border-b border-slate-100 bg-slate-50/50">
               <div>
                 <h2 className="font-bold text-slate-900">Seniority Levels</h2>
                 <p className="text-xs text-slate-500">
@@ -49,9 +49,6 @@ export default function HiringRolesPage() {
                   </span>
                 </p>
               </div>
-              <button className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-hover transition-colors">
-                + Add Level
-              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               <LevelsList />
