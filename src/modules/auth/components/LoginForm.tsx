@@ -99,14 +99,6 @@ export const LoginForm = () => {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
-        <div className="flex justify-end mt-1">
-          <Link
-            href="#"
-            className="text-sm font-medium text-primary hover:text-primary-light hover:underline transition-colors"
-          >
-            Forgot Password?
-          </Link>
-        </div>
       </div>
 
       {/* Submit Button */}

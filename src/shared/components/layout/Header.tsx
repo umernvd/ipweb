@@ -1,6 +1,5 @@
 "use client";
 
-import { Search } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
 export const Header = () => {
@@ -13,10 +12,6 @@ export const Header = () => {
       </div>
 
       <div className="flex items-center gap-6">
-        <button className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors">
-          <Search className="w-5 h-5" />
-        </button>
-
         <div className="h-8 w-px bg-slate-200" />
 
         <div className="flex items-center gap-3">
