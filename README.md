@@ -1,6 +1,6 @@
-# InterviewPro — AI-Powered Interview Management Platform
+# Interview Pro — AI Powered Interview Management Platform
 
-A full-stack SaaS web app that lets companies manage their entire interview pipeline — from setting up interviewers and question banks to reviewing AI-scored recordings uploaded from a companion Flutter mobile app.
+A full-stack SaaS web app that lets companies manage their entire interview pipeline, from setting up interviewers and question banks to reviewing AI scored recordings uploaded from a companion Flutter mobile app.
 
 ---
 
