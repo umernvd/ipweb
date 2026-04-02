@@ -1,7 +1,6 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
@@ -68,7 +67,7 @@ export const LoginForm = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
         />
       </div>
 
@@ -89,12 +88,12 @@ export const LoginForm = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10 transition-all"
+            className="flex w-full h-12 rounded-lg border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10 transition-all"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 hover:text-slate-600 focus:outline-none"
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
