@@ -3,15 +3,11 @@
 import { useState } from "react";
 import { AddInterviewerModal } from "./AddInterviewerModal";
 import { useInterviewers } from "@/modules/interviews/hooks/useInterviewers";
+import { SkeletonTable, ConfirmDialog } from "@/shared/components/ui";
 import {
   Search,
-  Filter,
-  Download,
   Plus,
-  Pencil,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Check,
 } from "lucide-react";
@@ -45,6 +41,7 @@ export const InterviewersTable = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [copiedAuthCode, setCopiedAuthCode] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Filter interviewers based on search query
   const filteredInterviewers = interviewers.filter((interviewer) => {
@@ -55,14 +52,12 @@ export const InterviewersTable = () => {
     );
   });
 
-  // Mock function to transform table row data into detailed drawer data
-  // In the real app, this would fetch from Appwrite based on ID
   const handleRowClick = (interviewer: any) => {
     const detailData: InterviewerDetail = {
       id: interviewer.id,
       name: interviewer.name,
       email: interviewer.email,
-      phone: "+1 (555) 000-0000",
+      phone: interviewer.phone || "—",
       status: interviewer.status,
       date: interviewer.date,
       initials: interviewer.initials,
@@ -73,19 +68,21 @@ export const InterviewersTable = () => {
     setIsDrawerOpen(true);
   };
 
-  // Delete handler with confirmation
-  const handleDelete = async (
+  // Delete handler - opens confirmation dialog
+  const handleDelete = (
     e: React.MouseEvent,
     id: string,
     name: string,
   ) => {
-    e.stopPropagation(); // Prevent row click
-    if (
-      window.confirm(
-        `Are you sure you want to remove ${name}? They will no longer be able to conduct interviews.`,
-      )
-    ) {
-      await deleteInterviewer(id);
+    e.stopPropagation();
+    setConfirmDelete({ id, name });
+  };
+
+  // Confirm delete handler
+  const handleConfirmDelete = async () => {
+    if (confirmDelete) {
+      await deleteInterviewer(confirmDelete.id);
+      setConfirmDelete(null);
     }
   };
 
@@ -109,7 +106,7 @@ export const InterviewersTable = () => {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Interviewers
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-700 mt-1">
             Manage your organization's interviewers and their permissions.
           </p>
         </div>
@@ -125,11 +122,11 @@ export const InterviewersTable = () => {
 
       {/* Main Table Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col flex-1 overflow-hidden">
-        {/* Toolbar */}
-        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-center bg-white">
-          <div className="relative w-full sm:max-w-sm">
+        {/* Search Bar */}
+        <div className="p-4 border-b border-slate-200 bg-white">
+          <div className="relative w-full max-w-sm">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700"
               size={18}
             />
             <input
@@ -145,11 +142,9 @@ export const InterviewersTable = () => {
         {/* Table */}
         <div className="overflow-x-auto flex-1">
           {isLoading ? (
-            <div className="flex justify-center items-center p-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
+            <SkeletonTable rows={5} columns={6} />
           ) : interviewers.length === 0 ? (
-            <div className="text-center p-12 text-slate-500">
+            <div className="text-center p-12 text-slate-700">
               No interviewers found. Click "Add Interviewer" to create one.
             </div>
           ) : (
@@ -157,48 +152,28 @@ export const InterviewersTable = () => {
               <thead>
                 {/* Human-designed modern header: light gray, crisp uppercase text */}
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[25%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[25%]">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[25%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[25%]">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[15%]">
                     Auth Code
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[15%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[15%]">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[10%]">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[10%]">
                     Added
                   </th>
-                  <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[10%] text-right">
+                  <th className="px-6 py-3 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[10%] text-right">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredInterviewers.map((interviewer) => {
-                  // Generate initials from name
-                  const initials = interviewer.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2);
-
-                  // Generate a color based on name hash
-                  const colors = [
-                    "bg-blue-100 text-blue-700",
-                    "bg-purple-100 text-purple-700",
-                    "bg-pink-100 text-pink-700",
-                    "bg-green-100 text-green-700",
-                    "bg-yellow-100 text-yellow-700",
-                  ];
-                  const colorIndex =
-                    interviewer.name.charCodeAt(0) % colors.length;
-                  const color = colors[colorIndex];
-
                   return (
                     <tr
                       key={interviewer.$id}
@@ -215,25 +190,16 @@ export const InterviewersTable = () => {
                             day: "numeric",
                             year: "numeric",
                           }),
-                          initials,
-                          color,
                         })
                       }
                       className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                     >
                       <td className="px-6 py-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`size-8 rounded-full flex items-center justify-center font-semibold text-xs border border-white shadow-sm ${color}`}
-                          >
-                            {initials}
-                          </div>
-                          <span className="font-medium text-slate-900">
-                            {interviewer.name}
-                          </span>
-                        </div>
+                        <span className="font-medium text-slate-900">
+                          {interviewer.name}
+                        </span>
                       </td>
-                      <td className="px-6 py-3.5 text-slate-500">
+                      <td className="px-6 py-3.5 text-slate-700">
                         {interviewer.email}
                       </td>
                       <td className="px-6 py-3.5">
@@ -246,7 +212,7 @@ export const InterviewersTable = () => {
                               onClick={(e) =>
                                 handleCopyAuthCode(e, interviewer.authCode!)
                               }
-                              className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
+                              className="p-1.5 text-slate-700 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
                               title="Copy auth code"
                             >
                               {copiedAuthCode === interviewer.authCode ? (
@@ -259,18 +225,17 @@ export const InterviewersTable = () => {
                         </div>
                       </td>
                       <td className="px-6 py-3.5">
-                        {/* Modern solid/subtle badges */}
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
+                          className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
                             interviewer.status === "Active"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-slate-100 text-slate-700 border-slate-200"
+                              ? "bg-emerald-700 text-white"
+                              : "bg-slate-700 text-white"
                           }`}
                         >
                           {interviewer.status}
                         </span>
                       </td>
-                      <td className="px-6 py-3.5 text-slate-500">
+                      <td className="px-6 py-3.5 text-slate-700">
                         {new Date(interviewer.$createdAt).toLocaleDateString(
                           "en-US",
                           {
@@ -283,18 +248,10 @@ export const InterviewersTable = () => {
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-md transition-colors"
-                            title="Edit"
-                            disabled={isMutating}
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
                             onClick={(e) =>
                               handleDelete(e, interviewer.$id, interviewer.name)
                             }
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                            className="p-1.5 text-slate-700 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
                             title="Delete"
                             disabled={isMutating}
                           >
@@ -314,6 +271,16 @@ export const InterviewersTable = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={createInterviewer}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Remove Interviewer"
+        description={`Are you sure you want to remove ${confirmDelete?.name}? They will no longer be able to conduct interviews.`}
+        variant="danger"
+        confirmText="Remove"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)}
       />
     </div>
   );

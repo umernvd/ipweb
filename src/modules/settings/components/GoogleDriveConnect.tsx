@@ -201,7 +201,7 @@ export const GoogleDriveConnect = () => {
 
         {isLoading ? (
           <div className="flex items-center gap-2 shrink-0">
-            <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+            <Loader2 className="w-4 h-4 text-slate-700 animate-spin" />
             <span className="text-sm text-slate-500">Checking...</span>
           </div>
         ) : isConnected ? (
@@ -215,7 +215,7 @@ export const GoogleDriveConnect = () => {
             <button
               onClick={handleDisconnect}
               disabled={isDisconnecting}
-              className="px-3 py-2 bg-red-50 hover:bg-red-100 disabled:bg-slate-100 text-red-600 disabled:text-slate-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              className="px-3 py-2 bg-red-50 hover:bg-red-100 disabled:bg-slate-100 text-red-600 disabled:text-slate-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             >
               {isDisconnecting ? (
                 <>

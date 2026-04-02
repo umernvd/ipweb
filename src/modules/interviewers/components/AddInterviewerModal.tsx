@@ -100,7 +100,7 @@ export const AddInterviewerModal = ({
               Full Name
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700">
                 <User size={18} />
               </span>
               <input
@@ -108,7 +108,7 @@ export const AddInterviewerModal = ({
                 id="fullName"
                 type="text"
                 placeholder="e.g. Jane Doe"
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 placeholder:text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             {errors.fullName && (
@@ -125,7 +125,7 @@ export const AddInterviewerModal = ({
               Email Address
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700">
                 <Mail size={18} />
               </span>
               <input
@@ -133,7 +133,7 @@ export const AddInterviewerModal = ({
                 id="email"
                 type="email"
                 placeholder="e.g. jane@company.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 placeholder:text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             {errors.email && (
@@ -158,7 +158,7 @@ export const AddInterviewerModal = ({
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none">
                 <ChevronDown size={18} />
               </span>
             </div>

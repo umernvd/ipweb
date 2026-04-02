@@ -19,7 +19,7 @@ export const Header = () => {
             <p className="text-sm font-semibold text-slate-900 leading-none">
               {user?.name || "User"}
             </p>
-            <p className="text-xs text-slate-400 mt-1 font-medium tracking-wide uppercase">
+            <p className="text-xs text-slate-700 mt-1 font-medium tracking-wide uppercase">
               Admin
             </p>
           </div>

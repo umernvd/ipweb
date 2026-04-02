@@ -98,7 +98,7 @@ export const ChangePasswordForm = () => {
             <button
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 hover:text-slate-600"
             >
               {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -123,7 +123,7 @@ export const ChangePasswordForm = () => {
             <button
               type="button"
               onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 hover:text-slate-600"
             >
               {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
