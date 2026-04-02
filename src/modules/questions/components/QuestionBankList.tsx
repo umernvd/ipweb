@@ -6,10 +6,10 @@ import { useQuestions } from "@/modules/questions/hooks/useQuestions";
 import { useLevels } from "@/modules/levels/hooks/useLevels";
 import { AddQuestionModal } from "./AddQuestionModal";
 import { BulkQuestionUpload } from "./BulkQuestionUpload";
+import { Skeleton, ConfirmDialog } from "@/shared/components/ui";
 import {
   Search,
   Plus,
-  Pencil,
   Trash2,
   ChevronDown,
   Upload,
@@ -18,13 +18,13 @@ import {
 const getDifficultyStyles = (difficulty: string) => {
   switch (difficulty) {
     case "Easy":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-emerald-700 text-white";
     case "Medium":
-      return "bg-amber-50 text-amber-700 border-amber-200";
+      return "bg-amber-700 text-white";
     case "Hard":
-      return "bg-rose-50 text-rose-700 border-rose-200";
+      return "bg-red-700 text-white";
     default:
-      return "bg-slate-50 text-slate-700 border-slate-200";
+      return "bg-slate-700 text-white";
   }
 };
 
@@ -41,6 +41,7 @@ export const QuestionBankList = () => {
   const [selectedSection, setSelectedSection] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   // Filter questions based on all active filters
   const filteredQuestions = questions.filter((q) => {
@@ -68,10 +69,16 @@ export const QuestionBankList = () => {
     return levels.find((l) => l.$id === levelId)?.title || "Unknown Level";
   };
 
-  // Handle delete with confirmation
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this question?")) {
-      await deleteQuestion(id);
+  // Handle delete - opens confirmation dialog
+  const handleDelete = (id: string) => {
+    setConfirmDelete(id);
+  };
+
+  // Confirm delete handler
+  const handleConfirmDelete = async () => {
+    if (confirmDelete) {
+      await deleteQuestion(confirmDelete);
+      setConfirmDelete(null);
     }
   };
 
@@ -83,7 +90,7 @@ export const QuestionBankList = () => {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             Question Bank
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-700 mt-1">
             Manage and organize interview questions for candidate assessments.
           </p>
         </div>
@@ -110,7 +117,7 @@ export const QuestionBankList = () => {
         {/* Search */}
         <div className="relative flex-1">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700"
             size={18}
           />
           <input
@@ -138,7 +145,7 @@ export const QuestionBankList = () => {
               ))}
             </select>
             <ChevronDown
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none"
               size={16}
             />
           </div>
@@ -156,7 +163,7 @@ export const QuestionBankList = () => {
               ))}
             </select>
             <ChevronDown
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none"
               size={16}
             />
           </div>
@@ -176,7 +183,7 @@ export const QuestionBankList = () => {
               )}
             </select>
             <ChevronDown
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none"
               size={16}
             />
           </div>
@@ -186,13 +193,25 @@ export const QuestionBankList = () => {
       {/* Questions List */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="text-slate-500">Loading questions...</div>
-          </div>
+          <>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="bg-white p-5 rounded-xl border border-slate-200">
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+                <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                  <Skeleton className="h-6 w-20 rounded" />
+                  <Skeleton className="h-6 w-16 rounded" />
+                  <Skeleton className="h-6 w-24 rounded" />
+                </div>
+              </div>
+            ))}
+          </>
         ) : filteredQuestions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <h3 className="text-slate-900 font-medium">No Questions Found</h3>
-            <p className="text-sm text-slate-500 max-w-xs mt-1">
+            <p className="text-sm text-slate-700 max-w-xs mt-1">
               {questions.length === 0
                 ? "Create your first question to get started."
                 : "No questions match your current filters."}
@@ -208,7 +227,7 @@ export const QuestionBankList = () => {
                 {/* Question Content */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-mono font-medium text-slate-400">
+                    <span className="text-xs font-mono font-medium text-slate-700">
                       {q.$id}
                     </span>
                   </div>
@@ -234,7 +253,7 @@ export const QuestionBankList = () => {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleDelete(q.$id)}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete"
                   >
                     <Trash2 size={18} />
@@ -253,7 +272,7 @@ export const QuestionBankList = () => {
 
                 <span className="text-slate-300 mx-1">•</span>
 
-                <span className="text-xs text-slate-500 font-medium">
+                <span className="text-xs text-slate-700 font-medium">
                   {q.category}
                 </span>
 
@@ -283,6 +302,17 @@ export const QuestionBankList = () => {
           // Refresh questions list after successful upload
           window.location.reload();
         }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Question"
+        description="Are you sure you want to delete this question? This action cannot be undone."
+        variant="danger"
+        confirmText="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)}
       />
     </div>
   );

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRoles } from "@/modules/roles/hooks/useRoles";
 import { useRoleStore } from "@/stores/roleStore";
-import { Briefcase, ChevronRight, Plus, Trash2, Loader2 } from "lucide-react";
+import { Briefcase, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Skeleton, ConfirmDialog } from "@/shared/components/ui";
 import {
   roleSchema,
   type RoleFormValues,
@@ -15,6 +16,7 @@ export const RolesList = () => {
   const { roles, isLoading, isMutating, createRole, deleteRole } = useRoles();
   const { selectedRoleId, setSelectedRole } = useRoleStore();
   const [isAdding, setIsAdding] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
 
   const {
     register,
@@ -35,8 +37,19 @@ export const RolesList = () => {
 
   if (isLoading && roles.length === 0) {
     return (
-      <div className="p-8 flex justify-center">
-        <Loader2 className="animate-spin text-slate-400" />
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex items-center justify-between p-4 border-b border-slate-50">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-lg" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="w-5 h-5 rounded" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -77,13 +90,7 @@ export const RolesList = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (
-                    window.confirm(
-                      `Delete role "${role.name}"? This action cannot be undone.`,
-                    )
-                  ) {
-                    deleteRole(role.$id);
-                  }
+                  setConfirmDelete({ id: role.$id, name: role.name });
                 }}
                 disabled={isMutating}
                 className="p-1.5 text-slate-300 hover:text-red-500 rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
@@ -158,6 +165,21 @@ export const RolesList = () => {
           </button>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Role"
+        description={`Are you sure you want to delete "${confirmDelete?.name}"? This action cannot be undone.`}
+        variant="danger"
+        confirmText="Delete"
+        onConfirm={() => {
+          if (confirmDelete) {
+            deleteRole(confirmDelete.id);
+            setConfirmDelete(null);
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 };

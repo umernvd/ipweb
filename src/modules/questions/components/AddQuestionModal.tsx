@@ -58,7 +58,7 @@ export function AddQuestionModal({ onClose }: AddQuestionModalProps) {
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-slate-700 hover:text-slate-600"
           >
             ✕
           </button>

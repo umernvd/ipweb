@@ -214,7 +214,7 @@ export const BulkQuestionUpload = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 text-slate-700 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <X size={20} />
           </button>
@@ -265,7 +265,7 @@ export const BulkQuestionUpload = ({
               />
               <label htmlFor="csv-upload" className="cursor-pointer">
                 <Upload
-                  className={`mx-auto mb-3 ${file ? "text-emerald-600" : "text-slate-400"}`}
+                  className={`mx-auto mb-3 ${file ? "text-emerald-600" : "text-slate-700"}`}
                   size={32}
                 />
                 {file ? (

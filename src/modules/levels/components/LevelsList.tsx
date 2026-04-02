@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useLevelStore } from "@/stores/levelStore";
 import { useRoleStore } from "@/stores/roleStore";
 import { useAuthStore } from "@/stores/authStore";
-import { Plus, Trash2, Loader2, X as XIcon } from "lucide-react";
+import { Plus, Trash2, X as XIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Skeleton, ConfirmDialog } from "@/shared/components/ui";
 import {
   levelSchema,
   type LevelFormValues,
@@ -18,9 +19,8 @@ export const LevelsList = () => {
   const { selectedRoleId } = useRoleStore();
   const { companyId } = useAuthStore();
   const [isAdding, setIsAdding] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  // FIX 1: Removed explicit <LevelFormValues> generic.
-  // Let zodResolver handle the type inference to avoid 'unknown vs number' conflicts.
   const {
     register,
     handleSubmit,
@@ -60,8 +60,15 @@ export const LevelsList = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="animate-spin text-slate-300" />
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-4 p-3 bg-white border border-slate-200 rounded-lg">
+            <Skeleton className="w-8 h-6 rounded" />
+            <Skeleton className="flex-1 h-5 w-32" />
+            <Skeleton className="flex-1 h-4 w-48" />
+            <Skeleton className="w-8 h-8 rounded" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -73,7 +80,7 @@ export const LevelsList = () => {
           <div className="h-6 w-6 text-slate-300 border-2 border-slate-300 rounded-sm" />
         </div>
         <h3 className="text-slate-900 font-medium">No Levels Defined</h3>
-        <p className="text-sm text-slate-500 max-w-xs mt-1 mb-4">
+        <p className="text-sm text-slate-700 max-w-xs mt-1 mb-4">
           Create seniority levels (e.g. Junior, Senior) for this role to start
           assigning questions.
         </p>
@@ -103,7 +110,7 @@ export const LevelsList = () => {
       )}
 
       {/* Levels Table Header */}
-      <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-slate-50 rounded-lg text-xs font-semibold text-slate-500 uppercase tracking-wide">
+      <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 uppercase tracking-wide">
         <div className="col-span-1 text-center">#</div>
         <div className="col-span-4">Level Name</div>
         <div className="col-span-6">Description</div>
@@ -118,7 +125,7 @@ export const LevelsList = () => {
             className="group relative grid grid-cols-12 gap-4 items-center p-3 bg-white border border-slate-200 rounded-lg hover:shadow-sm hover:border-slate-300 transition-all"
           >
             <div className="col-span-1 flex justify-center text-slate-300 cursor-grab active:cursor-grabbing">
-              <span className="font-mono text-xs font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+              <span className="font-mono text-xs font-medium text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
                 L{level.sortOrder}
               </span>
             </div>
@@ -127,13 +134,13 @@ export const LevelsList = () => {
               {level.title}
             </div>
 
-            <div className="col-span-6 text-sm text-slate-500 truncate">
+            <div className="col-span-6 text-sm text-slate-700 truncate">
               {level.description || "No description"}
             </div>
 
             <div className="col-span-1 flex justify-end">
               <button
-                onClick={() => removeLevel(level.$id)}
+                onClick={() => setConfirmDelete(level.$id)}
                 className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
               >
                 <Trash2 size={16} />
@@ -185,7 +192,7 @@ export const LevelsList = () => {
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded hover:bg-slate-50"
+                className="p-1.5 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50"
               >
                 <XIcon size={16} />
               </button>
@@ -203,13 +210,28 @@ export const LevelsList = () => {
         {!isAdding && levels.length > 0 && (
           <button
             onClick={() => setIsAdding(true)}
-            className="flex items-center justify-center gap-2 py-2 mt-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 hover:border-primary hover:text-primary hover:bg-slate-50 transition-all"
+            className="flex items-center justify-center gap-2 py-2 mt-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-700 hover:border-primary hover:text-primary hover:bg-slate-50 transition-all"
           >
             <Plus size={16} />
             Add Another Level
           </button>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Level"
+        description="Are you sure you want to delete this level? This action cannot be undone."
+        variant="danger"
+        confirmText="Delete"
+        onConfirm={() => {
+          if (confirmDelete) {
+            removeLevel(confirmDelete);
+            setConfirmDelete(null);
+          }
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 };
