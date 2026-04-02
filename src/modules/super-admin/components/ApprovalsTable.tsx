@@ -8,12 +8,13 @@ import {
   approveCompanyAdmin,
   rejectCompanyAdmin,
 } from "@/app/actions/adminActions";
+import { Skeleton } from "@/shared/components/ui";
 import {
   CheckCircle,
   XCircle,
-  Loader2,
   Building2,
   Calendar,
+  Loader2,
 } from "lucide-react";
 
 export const ApprovalsTable = () => {
@@ -58,8 +59,46 @@ export const ApprovalsTable = () => {
 
   if (isLoading && pendingCompanies.length === 0) {
     return (
-      <div className="p-12 flex justify-center">
-        <Loader2 className="animate-spin text-slate-400" />
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Company Details
+              </th>
+              <th className="px-6 py-4 font-semibold text-slate-700">
+                Registered On
+              </th>
+              <th className="px-6 py-4 font-semibold text-slate-700 text-right">
+                Decision
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {[1, 2, 3].map((i) => (
+              <tr key={i}>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-10 h-10 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <Skeleton className="h-4 w-20" />
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-8 w-16 rounded-lg" />
+                    <Skeleton className="h-8 w-20 rounded-lg" />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -71,7 +110,7 @@ export const ApprovalsTable = () => {
           <CheckCircle size={24} />
         </div>
         <h3 className="text-slate-900 font-medium">All Caught Up!</h3>
-        <p className="text-slate-500 text-sm mt-1">
+        <p className="text-slate-800 text-sm mt-1">
           There are no pending company approvals.
         </p>
       </div>
@@ -84,13 +123,13 @@ export const ApprovalsTable = () => {
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th className="px-6 py-4 font-semibold text-slate-500">
+              <th className="px-6 py-4 font-semibold text-slate-700">
                 Company Details
               </th>
-              <th className="px-6 py-4 font-semibold text-slate-500">
+              <th className="px-6 py-4 font-semibold text-slate-700">
                 Registered On
               </th>
-              <th className="px-6 py-4 font-semibold text-slate-500 text-right">
+              <th className="px-6 py-4 font-semibold text-slate-700 text-right">
                 Decision
               </th>
             </tr>
@@ -110,13 +149,13 @@ export const ApprovalsTable = () => {
                       <div className="font-medium text-slate-900">
                         {company.name}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-slate-700">
                         {company.email}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-slate-500">
+                <td className="px-6 py-4 text-slate-700">
                   <div className="flex items-center gap-2">
                     <Calendar size={14} />
                     {new Date(company.$createdAt).toLocaleDateString()}

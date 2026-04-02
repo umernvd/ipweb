@@ -40,7 +40,7 @@ export const CompaniesTable = () => {
 
   if (isLoading && allCompanies.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-400">
+      <div className="p-12 text-center text-slate-800">
         Loading companies...
       </div>
     );
@@ -51,15 +51,15 @@ export const CompaniesTable = () => {
       <table className="w-full text-left text-sm">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className="px-6 py-3 font-semibold text-slate-500">
+            <th className="px-6 py-3 font-semibold text-slate-700">
               Company Name
             </th>
-            <th className="px-6 py-3 font-semibold text-slate-500">Email</th>
-            <th className="px-6 py-3 font-semibold text-slate-500">Status</th>
-            <th className="px-6 py-3 font-semibold text-slate-500">
+            <th className="px-6 py-3 font-semibold text-slate-700">Email</th>
+            <th className="px-6 py-3 font-semibold text-slate-700">Status</th>
+            <th className="px-6 py-3 font-semibold text-slate-700">
               Interviews
             </th>
-            <th className="px-6 py-3 font-semibold text-slate-500 text-right">
+            <th className="px-6 py-3 font-semibold text-slate-700 text-right">
               Actions
             </th>
           </tr>
@@ -85,7 +85,7 @@ export const CompaniesTable = () => {
                     <button
                       title="Pause Access"
                       onClick={() => updateCompanyStatus(company.$id, "paused")}
-                      className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                      className="p-1.5 text-slate-700 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
                     >
                       <PauseCircle size={16} />
                     </button>
@@ -95,7 +95,7 @@ export const CompaniesTable = () => {
                     <button
                       title="Resume Access"
                       onClick={() => updateCompanyStatus(company.$id, "active")}
-                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                      className="p-1.5 text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                     >
                       <CheckCircle size={16} />
                     </button>
@@ -104,7 +104,7 @@ export const CompaniesTable = () => {
                   <button
                     title="Ban Company"
                     onClick={() => updateCompanyStatus(company.$id, "banned")}
-                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    className="p-1.5 text-slate-700 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                   >
                     <Ban size={16} />
                   </button>
@@ -114,7 +114,7 @@ export const CompaniesTable = () => {
           ))}
           {allCompanies.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+              <td colSpan={5} className="px-6 py-12 text-center text-slate-700">
                 No companies found.
               </td>
             </tr>

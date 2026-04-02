@@ -14,7 +14,7 @@ export const PendingApprovalsTable = () => {
 
   if (isLoading) {
     return (
-      <div className="p-12 text-center text-slate-400 bg-slate-50 border-t border-slate-100">
+      <div className="p-12 text-center text-slate-800 bg-slate-50 border-t border-slate-100">
         Loading approvals...
       </div>
     );
@@ -23,12 +23,12 @@ export const PendingApprovalsTable = () => {
   if (pendingCompanies.length === 0) {
     return (
       <div className="p-12 text-center flex flex-col items-center gap-3 bg-slate-50/50 border-t border-slate-100">
-        <div className="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+        <div className="h-10 w-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-700">
           <Clock size={20} />
         </div>
         <div>
           <p className="text-slate-900 font-medium text-sm">All caught up!</p>
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-800 text-xs">
             No pending company registrations found.
           </p>
         </div>
@@ -38,7 +38,7 @@ export const PendingApprovalsTable = () => {
 
   return (
     <table className="w-full text-left text-sm">
-      <thead className="bg-slate-50 text-slate-500 border-b border-slate-100">
+      <thead className="bg-slate-50 text-slate-700 border-b border-slate-100">
         <tr>
           <th className="px-6 py-3 font-semibold">Company Name</th>
           <th className="px-6 py-3 font-semibold">Email</th>
@@ -56,7 +56,7 @@ export const PendingApprovalsTable = () => {
               {company.name}
             </td>
             <td className="px-6 py-3.5 text-slate-600">{company.email}</td>
-            <td className="px-6 py-3.5 text-slate-500">
+            <td className="px-6 py-3.5 text-slate-800">
               {new Date(company.$createdAt).toLocaleDateString()}
             </td>
             <td className="px-6 py-3.5 text-right">

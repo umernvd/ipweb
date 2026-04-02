@@ -42,7 +42,7 @@ export default function SuperAdminDashboard() {
     <div className="max-w-7xl mx-auto flex flex-col gap-8">
       <div>
         <h2 className="text-xl font-bold text-slate-900">Platform Overview</h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-700 mt-1">
           Monitor system health and company registrations.
         </p>
       </div>
@@ -51,10 +51,10 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-slate-700">
               Total Companies
             </p>
-            <Building2 size={20} className="text-slate-400" />
+            <Building2 size={20} className="text-slate-700" />
           </div>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-bold text-slate-900">
@@ -64,10 +64,10 @@ export default function SuperAdminDashboard() {
         </div>
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-slate-700">
               Active Companies
             </p>
-            <CheckCircle2 size={20} className="text-slate-400" />
+            <CheckCircle2 size={20} className="text-slate-700" />
           </div>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-bold text-slate-900">
@@ -77,10 +77,10 @@ export default function SuperAdminDashboard() {
         </div>
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-slate-700">
               Pending Approvals
             </p>
-            <Clock size={20} className="text-slate-400" />
+            <Clock size={20} className="text-slate-700" />
           </div>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-bold text-slate-900">
@@ -90,10 +90,10 @@ export default function SuperAdminDashboard() {
         </div>
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-slate-700">
               Total Interviews
             </p>
-            <Video size={20} className="text-slate-400" />
+            <Video size={20} className="text-slate-700" />
           </div>
           <div className="flex items-baseline gap-2">
             <h3 className="text-3xl font-bold text-slate-900">
@@ -116,7 +116,7 @@ export default function SuperAdminDashboard() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-white border-b border-slate-100 text-slate-500">
+            <thead className="bg-white border-b border-slate-100 text-slate-700">
               <tr>
                 <th className="px-6 py-4 font-medium">Company Name</th>
                 <th className="px-6 py-4 font-medium">Email</th>
@@ -129,7 +129,7 @@ export default function SuperAdminDashboard() {
                 <tr>
                   <td
                     colSpan={4}
-                    className="px-6 py-8 text-center text-slate-500"
+                    className="px-6 py-8 text-center text-slate-700"
                   >
                     No pending approvals at this time.
                   </td>
