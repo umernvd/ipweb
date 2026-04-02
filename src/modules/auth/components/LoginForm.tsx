@@ -48,7 +48,7 @@ export const LoginForm = () => {
     <form onSubmit={handleLogin} className="flex flex-col gap-5">
       {/* Error Message */}
       {(error || authError) && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+        <div className="p-3 bg-red-700 text-white rounded-lg text-sm">
           {error || authError}
         </div>
       )}
