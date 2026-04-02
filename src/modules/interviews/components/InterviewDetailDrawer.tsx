@@ -88,7 +88,7 @@ export const InterviewDetailDrawer = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors mt-0.5"
+            className="p-2 text-slate-700 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors mt-0.5"
           >
             <X size={20} />
           </button>
@@ -98,7 +98,7 @@ export const InterviewDetailDrawer = ({
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                 Email
               </span>
               <span
@@ -109,25 +109,25 @@ export const InterviewDetailDrawer = ({
               </span>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                 Date
               </span>
               <div className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
-                <Calendar size={13} className="text-slate-400" />
+                <Calendar size={13} className="text-slate-700" />
                 {interview.date}
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                 Interviewer
               </span>
               <div className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
-                <User size={13} className="text-slate-400" />
+                <User size={13} className="text-slate-700" />
                 {interview.interviewer}
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                 Phone
               </span>
               <span className="text-sm font-medium text-slate-700">
@@ -161,7 +161,7 @@ export const InterviewDetailDrawer = ({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
-          <p className="text-xs text-slate-400 text-center">
+          <p className="text-xs text-slate-700 text-center">
             Interview recorded on {interview.date} · {interview.interviewer}
           </p>
         </div>

@@ -79,7 +79,7 @@ export const DriveAssetCard = ({
       {/* Security Hint */}
       <div className="mt-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-        <span className="text-[10px] text-slate-400">
+        <span className="text-[10px] text-slate-700">
           Ensure you are logged into the <b>Company Gmail</b> to view.
         </span>
       </div>

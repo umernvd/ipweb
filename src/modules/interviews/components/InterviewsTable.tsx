@@ -6,6 +6,7 @@ import {
   InterviewDetailDrawer,
   type InterviewDetail,
 } from "./InterviewDetailDrawer";
+import { SkeletonTable } from "@/shared/components/ui";
 import {
   Search,
   ChevronLeft,
@@ -17,7 +18,7 @@ import {
 
 const getScoreBadge = (score: number | null) => {
   if (score === null)
-    return <span className="text-slate-400 font-medium">-</span>;
+    return <span className="text-slate-700 font-medium">-</span>;
   if (score >= 80)
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -61,7 +62,7 @@ const getStatusBadge = (status: string) => {
         </span>
       );
     default:
-      return <span className="text-sm text-slate-500">{status}</span>;
+      return <span className="text-sm text-slate-700">{status}</span>;
   }
 };
 
@@ -116,8 +117,10 @@ export const InterviewsTable = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="animate-spin text-slate-400" size={32} />
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-200">
+          <SkeletonTable rows={8} columns={7} />
+        </div>
       </div>
     );
   }
@@ -137,7 +140,7 @@ export const InterviewsTable = () => {
         <h3 className="text-lg font-semibold text-slate-900">
           No Interviews Found
         </h3>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-700 mt-1">
           {searchQuery
             ? "No interviews match your search."
             : "Start an interview on the mobile app to see it here."}
@@ -218,14 +221,14 @@ export const InterviewsTable = () => {
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
             Interviews
           </h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-700 text-sm mt-1">
             Manage and track candidate interviews across all active roles.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700"
               size={18}
             />
             <input
@@ -244,25 +247,25 @@ export const InterviewsTable = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[280px]">
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider w-[280px]">
                   Candidate
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Level
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Interviewer
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right"></th>
+                <th className="py-3 px-6 text-xs font-semibold text-slate-700 uppercase tracking-wider text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -289,7 +292,7 @@ export const InterviewsTable = () => {
                   <td className="py-3.5 px-6 text-sm text-slate-700">
                     {interview.interviewer?.name || "Unknown"}
                   </td>
-                  <td className="py-3.5 px-6 text-sm text-slate-500">
+                  <td className="py-3.5 px-6 text-sm text-slate-700">
                     {interview.startedAt
                       ? new Date(interview.startedAt).toLocaleDateString()
                       : "N/A"}
@@ -298,7 +301,7 @@ export const InterviewsTable = () => {
                     {getStatusBadge(interview.status)}
                   </td>
                   <td className="py-3.5 px-6 text-right">
-                    <div className="flex items-center justify-end text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all">
+                    <div className="flex items-center justify-end text-slate-700 opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all">
                       <ArrowRight size={18} />
                     </div>
                   </td>
@@ -309,7 +312,7 @@ export const InterviewsTable = () => {
         </div>
 
         <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-700">
             Showing{" "}
             <span className="font-medium text-slate-900">{startItem}</span> to{" "}
             <span className="font-medium text-slate-900">{endItem}</span> of{" "}
@@ -319,7 +322,7 @@ export const InterviewsTable = () => {
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 border border-slate-200 rounded-md text-slate-700 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
@@ -339,7 +342,7 @@ export const InterviewsTable = () => {
               ) : (
                 <span
                   key={index}
-                  className="h-8 w-8 flex items-center justify-center text-slate-400 text-sm"
+                  className="h-8 w-8 flex items-center justify-center text-slate-700 text-sm"
                 >
                   {page}
                 </span>
@@ -348,7 +351,7 @@ export const InterviewsTable = () => {
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className="p-1.5 border border-slate-200 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 border border-slate-200 rounded-md text-slate-700 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={18} />
             </button>
