@@ -26,9 +26,9 @@ export const StatCard = ({
   return (
     <div className="flex flex-col p-5 bg-white border border-slate-200 rounded-xl shadow-sm transition-all hover:shadow-md">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-medium text-slate-500">{title}</p>
+        <p className="text-sm font-medium text-slate-700">{title}</p>
         {/* We use a subtle gray for the icon to keep it professional */}
-        <Icon className="w-5 h-5 text-slate-400" />
+        <Icon className="w-5 h-5 text-slate-700" />
       </div>
 
       <div className="flex items-baseline gap-3">
@@ -41,7 +41,7 @@ export const StatCard = ({
                 ? "text-emerald-600"
                 : trend.isPositive === false
                   ? "text-red-600"
-                  : "text-slate-500"
+                  : "text-slate-700"
             }`}
           >
             {trend.isPositive === true
@@ -51,7 +51,7 @@ export const StatCard = ({
                 : ""}{" "}
             {trend.value}
             {trend.label && (
-              <span className="ml-1 text-slate-400 font-normal">
+              <span className="ml-1 text-slate-700 font-normal">
                 {trend.label}
               </span>
             )}

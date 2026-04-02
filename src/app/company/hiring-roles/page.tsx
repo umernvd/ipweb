@@ -29,7 +29,7 @@ export default function HiringRolesPage() {
       <div className="w-1/3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-100 bg-slate-50/50">
           <h2 className="font-bold text-slate-900">Hiring Roles</h2>
-          <p className="text-xs text-slate-500">Select a role to view levels</p>
+          <p className="text-xs text-slate-700">Select a role to view levels</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           <RolesList />
@@ -42,7 +42,7 @@ export default function HiringRolesPage() {
             <div className="p-4 border-b border-slate-100 bg-slate-50/50">
               <div>
                 <h2 className="font-bold text-slate-900">Seniority Levels</h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-700">
                   For:{" "}
                   <span className="font-medium text-primary">
                     {roles.find((r) => r.$id === selectedRoleId)?.name}
@@ -55,7 +55,7 @@ export default function HiringRolesPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-700">
             <p>Select a role from the left to manage its levels.</p>
           </div>
         )}

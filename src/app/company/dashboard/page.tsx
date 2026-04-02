@@ -1,15 +1,15 @@
 "use client";
 
-import { Users, Briefcase, Video, Clock } from "lucide-react";
+import { Users, Briefcase, Video } from "lucide-react";
 import { StatCard } from "@/modules/dashboard/components/StatCard";
 import { useCompanyDashboard } from "@/modules/dashboard/hooks/useCompanyDashboard";
+import { Skeleton } from "@/shared/components/ui";
 
 export default function DashboardPage() {
   const {
     totalInterviewers,
     activeRoles,
     totalInterviews,
-    pendingInterviews,
     recentInterviews,
     chartData,
     isLoading,
@@ -17,15 +17,50 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="mx-auto max-w-7xl flex flex-col gap-8">
+        {/* Stat Cards Skeleton */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white p-6 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-4">
+                <Skeleton className="w-12 h-12 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-3 w-20 mb-2" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Chart and Recent Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200">
+            <Skeleton className="h-6 w-40 mb-6" />
+            <Skeleton className="h-64 w-full rounded-lg" />
+          </div>
+          <div className="bg-white p-6 rounded-xl border border-slate-200">
+            <Skeleton className="h-6 w-40 mb-6" />
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-100">
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-7xl flex flex-col gap-8">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="Total Interviewers"
           value={totalInterviewers.toString()}
@@ -44,18 +79,12 @@ export default function DashboardPage() {
           icon={Video}
           colorTheme="indigo"
         />
-        <StatCard
-          title="Pending Interviews"
-          value={pendingInterviews.toString()}
-          icon={Clock}
-          colorTheme="orange"
-        />
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart Area */}
-        <div className="col-span-1 lg:col-span-2 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+        <div className="col-span-1 lg:col-span-2 rounded-xl bg-white p-6 border border-slate-200">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900">
               Interview Activity
@@ -75,7 +104,7 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-2 text-xs text-slate-400 px-2">
+          <div className="flex justify-between mt-2 text-xs text-slate-700 px-2">
             {chartData.map((item, i) => (
               <span key={i}>{item.label}</span>
             ))}
@@ -83,7 +112,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent List */}
-        <div className="col-span-1 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 flex flex-col">
+        <div className="col-span-1 rounded-xl bg-white p-6 border border-slate-200 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-slate-900">
               Recent Interviews
@@ -91,7 +120,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-col gap-4 overflow-y-auto pr-1">
             {recentInterviews.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-8">
+              <p className="text-sm text-slate-700 text-center py-8">
                 No recent interviews
               </p>
             ) : (
@@ -113,7 +142,7 @@ export default function DashboardPage() {
                       <span className="text-sm font-semibold text-slate-900">
                         {interview.candidate?.name || "Unknown"}
                       </span>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-slate-700">
                         {interview.role?.title || "No Role"}
                       </span>
                     </div>
